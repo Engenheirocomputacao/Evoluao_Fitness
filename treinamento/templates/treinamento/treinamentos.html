@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% load static dict_filters %}
+
+{% block title %}Treinamentos - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+{{ block.super }}
+<style>
+    .page-header {
+        background: rgba(0, 0, 0, 0);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        min-width: 120px;
+    }
+    
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+    
+    .btn-back i {
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-back:hover i {
+        transform: translateX(-3px);
+    }
+    
+    .training-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .training-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-color);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .training-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .training-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0;
+    }
+    
+    .training-unit {
+        display: inline-block;
+        background: var(--primary-color);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .training-description {
+        color: #6b7280;
+        line-height: 1.5;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1rem;
+        }
+        
+        .training-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .training-card {
+            padding: 1.5rem;
+        }
+        
+        .training-name {
+            font-size: 1.25rem;
+        }
+        
+        .d-flex {
+            flex-direction: column;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Ocultar mensagens de sucesso em telas pequenas */
+        .alert.alert-success {
+            display: none !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .training-card {
+            padding: 1rem;
+        }
+        
+        .training-name {
+            font-size: 1.1rem;
+        }
+        
+        /* Ocultar mensagens de sucesso em telas muito pequenas */
+        .alert.alert-success {
+            display: none !important;
+        }
+    }
+    
+    /* High Contrast Mode Specific Rules for Treinamentos Page */
+    .high-contrast .training-grid {
+        gap: 2rem;
+    }
+    
+    .high-contrast .training-card:hover {
+        border-color: #ffff00 !important;
+        box-shadow: 0 0 10px rgba(255, 255, 0, 0.5) !important;
+    }
+    
+    .high-contrast .btn-back {
+        background-color: #ffff00 !important;
+        color: #000 !important;
+        border: 2px solid #fff !important;
+    }
+    
+    .high-contrast .btn-back:hover {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+    
+    .high-contrast .btn-primary {
+        background-color: #ffff00 !important;
+        color: #000 !important;
+        border: 2px solid #fff !important;
+    }
+    
+    .high-contrast .btn-primary:hover {
+        background-color: #fff !important;
+        color: #000 !important;
+        box-shadow: 0 0 10px rgba(255, 255, 0, 0.5) !important;
+    }
+    
+    .high-contrast .empty-state {
+        color: #fff !important;
+    }
+    
+    .high-contrast .empty-state-icon {
+        color: #ffff00 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Messages -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-dumbbell"></i>
+            Treinamentos
+        </h1>
+        <p class="page-subtitle">Gerencie os tipos de treinamentos disponíveis no sistema</p>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex justify-content-center w-100">
+        <a href="{% url 'home_view' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex gap-2">
+        <a href="/registros/" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Adicionar Novo Treinamento
+        </a>
+    </div>
+    
+    
+    {% if treinamentos %}
+        <div class="training-grid">
+            <!-- Card Força -->
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-dumbbell"></i> Força</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_forca %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- Card Velocidade -->
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-running"></i> Velocidade</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_velocidade %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- Card Resistência -->
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-heartbeat"></i> Resistência</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_resistencia %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Card Flexões -->
+            {% if registros_flexoes %}
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-walking"></i> Flexões</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_flexoes %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:0 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Card Corrida Leve -->
+            {% if registros_corrida_leve %}
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-running"></i> Corrida Leve</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_corrida_leve %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Card Caminhada -->
+            {% if registros_caminhada %}
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-walking"></i> Caminhada</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_caminhada %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Card Natação -->
+            {% if registros_natacao %}
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-swimmer"></i> Natação</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_natacao %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- Card Ciclismo -->
+            {% if registros_ciclismo %}
+            <div class="training-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h3 class="training-name"><i class="fas fa-bicycle"></i> Ciclismo</h3>
+                </div>
+                <ul class="list-group mt-3 mb-2">
+                    {% for registro in registros_ciclismo %}
+                        <li class="list-group-item p-1 d-flex justify-content-between align-items-center" style="font-size:0.95em;">
+                            <span>{{ registro.treinamento.nome }}</span>
+                            <span class="badge bg-success">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.get_unidade_medida_display }}</span>
+                            <span class="text-muted small ms-2">{{ registro.data|date:"d/m/Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item p-1 text-muted">Nenhum registro</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <h3>Nenhum treinamento cadastrado</h3>
+            <p>Comece adicionando seu primeiro tipo de treinamento.</p>
+        </div>
+    {% endif %}
+
+    
+</div>
+{% endblock %}

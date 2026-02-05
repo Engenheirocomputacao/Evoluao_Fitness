@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Alertas do Sistema - Evolução Fitness{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .alert-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .filters-bar {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .alert-list-item {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        border-left: 5px solid #cbd5e1;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .alert-list-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-critical {
+        border-left-color: #ef4444;
+    }
+
+    .alert-warning {
+        border-left-color: #f59e0b;
+    }
+
+    .alert-info {
+        border-left-color: #3b82f6;
+    }
+
+    .alert-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .badge-critical {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .badge-warning {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .badge-info {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .alert-actions button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        transition: background 0.2s;
+    }
+
+    .alert-actions button:hover {
+        background: #f1f5f9;
+    }
+
+    .alert-resolved {
+        opacity: 0.6;
+        background: #f8fafc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 alert-container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_view' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'iot_dashboard' %}">IoT</a></li>
+            <li class="breadcrumb-item active">Alertas</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2 fw-bold text-dark m-0">Histórico de Alertas</h1>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+        <div class="d-flex gap-2">
+            <a href="?severity=critical"
+                class="btn btn-sm btn-outline-danger {% if severity_filter == 'critical' %}active{% endif %}">Críticos</a>
+            <a href="?severity=warning"
+                class="btn btn-sm btn-outline-warning {% if severity_filter == 'warning' %}active{% endif %}">Avisos</a>
+            <a href="?severity=info"
+                class="btn btn-sm btn-outline-primary {% if severity_filter == 'info' %}active{% endif %}">Informações</a>
+            <a href="?" class="btn btn-sm btn-outline-secondary {% if not severity_filter %}active{% endif %}">Todos</a>
+        </div>
+
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="showResolved" {% if show_resolved %}checked{% endif %}
+                onchange="window.location.href='?show_resolved=' + (this.checked ? 'true' : 'false') + '{% if severity_filter %}&severity={{ severity_filter }}{% endif %}'">
+            <label class="form-check-label" for="showResolved">Mostrar Resolvidos</label>
+        </div>
+    </div>
+
+    <!-- Lista de Alertas -->
+    <div class="alerts-list">
+        {% for alerta in alertas %}
+        <div class="alert-list-item alert-{{ alerta.severidade }} {% if alerta.resolvido %}alert-resolved{% endif %}"
+            id="alert-{{ alerta.id }}">
+            <div class="d-flex align-items-start gap-3">
+                <div class="mt-1">
+                    {% if alerta.severidade == 'critical' %}
+                    <i class="fas fa-exclamation-circle fa-lg text-danger"></i>
+                    {% elif alerta.severidade == 'warning' %}
+                    <i class="fas fa-exclamation-triangle fa-lg text-warning"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle fa-lg text-primary"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge-{{ alerta.severidade }} alert-badge">{{ alerta.get_severidade_display
+                            }}</span>
+                        <span class="text-muted small">• {{ alerta.criado_em|timesince }} atrás</span>
+                    </div>
+                    <h5 class="mb-1 text-dark">{{ alerta.mensagem }}</h5>
+                    <p class="mb-0 small text-muted">
+                        Dispositivo: <strong>{{ alerta.dispositivo.nome }}</strong>
+                        {% if alerta.leitura %}
+                        • Valor: {{ alerta.leitura.valor }} {{ alerta.leitura.unidade }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert-actions">
+                {% if not alerta.visualizado %}
+                <button onclick="markAsViewed({{ alerta.id }})" title="Marcar como lido" class="text-primary">
+                    <i class="fas fa-check-double"></i>
+                </button>
+                {% endif %}
+
+                {% if not alerta.resolvido %}
+                <button onclick="markAsResolved({{ alerta.id }})" title="Resolver alerta" class="text-success">
+                    <i class="fas fa-check-circle"></i>
+                </button>
+                {% else %}
+                <span class="text-success small fw-bold">
+                    <i class="fas fa-check me-1"></i> Resolvido
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <div class="text-muted mb-3">
+                <i class="far fa-bell-slash fa-3x"></i>
+            </div>
+            <h4>Nenhum alerta encontrado</h4>
+            <p class="text-muted">Não há alertas correspondentes aos filtros selecionados.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function markAsViewed(alertId) {
+        fetch(`/iot/alerts/${alertId}/viewed/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recarrega para atualizar estado visual
+                    window.location.reload();
+                }
+            });
+    }
+
+    function markAsResolved(alertId) {
+        if (!confirm('Marcar este alerta como resolvido?')) return;
+
+        fetch(`/iot/alerts/${alertId}/resolved/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const alertEl = document.getElementById(`alert-${alertId}`);
+                    alertEl.classList.add('alert-resolved');
+                    window.location.reload();
+                }
+            });
+    }
+</script>
+{% endblock %}

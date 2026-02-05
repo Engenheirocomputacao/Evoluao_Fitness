@@ -1,0 +1,786 @@
+{% extends "base.html" %}
+{% load static %}
+{% load l10n %}
+
+{% block title %}Detalhes do Dispositivo - {{ dispositivo.nome }}{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- @ts-nocheck -->
+<script>
+    // Verificar se Chart.js foi carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Chart !== 'undefined') {
+            console.log('Chart.js carregado com sucesso - versão:', Chart.version);
+        } else {
+            console.error('Chart.js não foi carregado');
+        }
+    });
+</script>
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6365f17c 0%, #a955f780 100%);
+        --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+        --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-image: url("{% static 'img/hero_bg.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: -1;
+    }
+
+    .device-detail-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .device-header-card {
+        background: rgba(99, 101, 241, 0);
+        backdrop-filter: blur(10px);
+        color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .device-header-bg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50%;
+        background: url('{% static "img/hero_bg.png" %}') no-repeat center center;
+        background-size: cover;
+        opacity: 0.1;
+        -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+        mask-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    }
+
+    .device-meta {
+        position: relative;
+        z-index: 2;
+    }
+
+    .device-meta h1 {
+        color: white;
+    }
+
+    .device-header-card .device-type-badge .badge {
+        background: transparent !important;
+        color: rgba(255, 255, 255, 0.747);
+        border: 1px solid rgba(255, 255, 255, 0);
+        padding: 0.5rem 1rem;
+    }
+
+    .status-badge-lg {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        margin-left: 1rem;
+    }
+
+    .config-card,
+    .readings-card,
+    .alerts-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .reading-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .reading-item:last-child {
+        border-bottom: none;
+    }
+
+    .reading-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    
+    /* Pagination Styles */
+    .pagination-controls {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1.5rem;
+    }
+    
+    .pagination-info {
+        flex: 1;
+    }
+    
+    .pagination-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-pagination {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #f9fafb;
+        color: #374151;
+        text-decoration: none;
+        border-radius: 0.5rem;
+        border: 1px solid #d1d5db;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-pagination:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+        color: #1f2937;
+        text-decoration: none;
+    }
+    
+    .btn-pagination:first-child {
+        margin-right: 0.25rem;
+    }
+    
+    .btn-pagination:last-child {
+        margin-left: 0.25rem;
+    }
+    
+    .current-page {
+        padding: 0.5rem 1rem;
+        background: #e5e7eb;
+        color: #374151;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    /* Responsive pagination */
+    @media (max-width: 768px) {
+        .pagination-controls {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .pagination-buttons {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-pagination {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .current-page {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    .config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .config-item label {
+        display: block;
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .config-item span {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .alert-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .alert-critical {
+        background: #fef2f2;
+        border-left: 4px solid #dc2626;
+    }
+
+    .alert-warning {
+        background: #fff7ed;
+        border-left: 4px solid #ea580c;
+    }
+
+    .alert-info {
+        background: #eff6ff;
+        border-left: 4px solid #2563eb;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin-top: 1rem;
+    }
+
+    /* Header Actions - Following IoT Dashboard Pattern */
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: none;
+        font-weight: 600;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-edit-device {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        border: none;
+    }
+
+    .btn-edit-device:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-delete-device {
+        background: var(--accent-gradient);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        cursor: pointer;
+    }
+
+    .btn-delete-device:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+    }
+    
+    /* Custom badge colors */
+    .bg-purple {
+        background-color: #8b5cf6 !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .device-detail-container {
+            padding: 1rem;
+        }
+
+        .header-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .btn-back, .btn-edit-device, .btn-delete-device {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* High Contrast Mode Styles */
+    .high-contrast .device-header-card {
+        background: #000000 !important;
+        border: 3px solid #ffff00 !important;
+    }
+
+    .high-contrast .device-meta h1,
+    .high-contrast .device-meta p {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .config-card,
+    .high-contrast .readings-card,
+    .high-contrast .alerts-card {
+        background: #000000 !important;
+        border: 3px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .config-card h3,
+    .high-contrast .readings-card h3,
+    .high-contrast .alerts-card h3 {
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00;
+        padding-bottom: 0.5rem;
+    }
+
+    .high-contrast .reading-value,
+    .high-contrast .config-item span {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .reading-item {
+        border-bottom: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .config-item label,
+    .high-contrast .text-muted {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .btn-back,
+    .high-contrast .btn-edit-device,
+    .high-contrast .btn-delete-device {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .btn-back:hover,
+    .high-contrast .btn-edit-device:hover,
+    .high-contrast .btn-delete-device:hover {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+
+    .high-contrast .badge {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .status-badge-lg {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .alert-item {
+        background: #000000 !important;
+        border: 3px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .btn-pagination {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .btn-pagination:hover {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+
+    .high-contrast .current-page {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    /* Textos adicionais para alto contraste */
+    .high-contrast p,
+    .high-contrast span,
+    .high-contrast div,
+    .high-contrast label,
+    .high-contrast small {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast h1,
+    .high-contrast h2,
+    .high-contrast h3,
+    .high-contrast h4,
+    .high-contrast h5,
+    .high-contrast h6 {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast i,
+    .high-contrast .fas,
+    .high-contrast .far {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast a {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .pagination-info small {
+        color: #ffff00 !important;
+    }
+
+    /* Status Indicator Styles */
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-online {
+        background: #4ade80;
+    }
+
+    .status-offline {
+        background: #f87171;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="device-detail-container">
+
+    <!-- Header -->
+    <div class="device-header-card">
+        <div class="device-header-bg"></div>
+        <div class="device-meta">
+            <div class="d-flex align-items-center mb-2">
+                <h1 class="m-0">{{ dispositivo.nome }}</h1>
+                <span class="status-badge-lg">
+                    <!-- Template Django: classe dinâmica baseada no status -->
+                    <span class="status-indicator {% if dispositivo.esta_online %}status-online{% else %}status-offline{% endif %}"></span>
+                    {{ dispositivo.get_status_display }}
+                </span>
+            </div>
+            <p class="mb-4 opacity-75">ID: {{ dispositivo.device_id }} • Tipo: {{ dispositivo.get_tipo_display }}</p>
+            <div class="device-type-badge mb-3">
+                {% if dispositivo.tipo == 'heartrate' %}
+                <span class="badge bg-danger"><i class="fas fa-heartbeat me-1"></i> Monitor Cardíaco</span>
+                {% elif dispositivo.tipo == 'steps' %}
+                <span class="badge bg-primary"><i class="fas fa-walking me-1"></i> Contador de Passos</span>
+                {% elif dispositivo.tipo == 'gps' %}
+                <span class="badge bg-success"><i class="fas fa-location-dot me-1"></i> Rastreador GPS</span>
+                {% elif dispositivo.tipo == 'reps' %}
+                <span class="badge bg-purple"><i class="fas fa-dumbbell me-1"></i> Contador de Repetições</span>
+                {% elif dispositivo.tipo == 'weight' %}
+                <span class="badge bg-info"><i class="fas fa-weight me-1"></i> Balança</span>
+                {% else %}
+                <span class="badge bg-secondary"><i class="fas fa-microchip me-1"></i> Genérico</span>
+                {% endif %}
+            </div>
+
+            <div class="header-actions">
+                <a href="{% url 'iot_dashboard' %}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Voltar ao IoT
+                </a>
+                <a href="{% url 'dashboard_view' %}" class="btn-back">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="{% url 'device_edit' dispositivo.id %}" class="btn-edit-device">
+                    <i class="fas fa-edit"></i> Editar Dispositivo
+                </a>
+                <form action="{% url 'device_delete' dispositivo.id %}" method="POST"
+                    onsubmit="return confirm('Tem certeza que deseja remover este dispositivo?');"
+                    style="display: inline-block; margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete-device">
+                        <i class="fas fa-trash-alt"></i> Remover Dispositivo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Chart -->
+            <div class="config-card">
+                <h3 class="h5 mb-4"><i class="fas fa-chart-area me-2 text-primary"></i>Histórico Recente</h3>
+                <!-- Container do gráfico com dados injetados via data-leituras -->
+                <div class="chart-container" data-leituras='{{ leituras_json|safe }}' data-device-type="{{ dispositivo.tipo }}">
+                    <canvas id="readingsChart"></canvas>
+                </div>
+                <div id="noChartData" class="text-center py-5" style="display: none;">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Nenhum dado disponível</h4>
+                    <p class="text-muted">Aguardando leituras do dispositivo...</p>
+                </div>
+            </div>
+
+            <!-- Map Section for GPS devices -->
+            {% if dispositivo.tipo == 'gps' and coordenadas_mapa %}
+            <div class="config-card">
+                <h3 class="h5 mb-4"><i class="fas fa-map-marked-alt me-2 text-primary"></i>Mapa de Localização</h3>
+                <div id="map" style="height: 400px; width: 100%; border-radius: 0.5rem; border: 1px solid #dee2e6;"></div>
+            </div>
+            {% elif dispositivo.tipo == 'gps' %}
+            <div class="config-card">
+                <h3 class="h5 mb-4"><i class="fas fa-map-marked-alt me-2 text-primary"></i>Mapa de Localização</h3>
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-map-marked-alt fa-2x mb-3"></i>
+                    <p>Nenhuma coordenada disponível para exibir no mapa.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Readings -->
+            <div class="readings-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 m-0"><i class="fas fa-list me-2 text-primary"></i>Últimas Leituras</h3>
+                    <span class="badge bg-light text-dark">{{ total_leituras }} total</span>
+                </div>
+                <div class="readings-list">
+                    {% for leitura in leituras %}
+                    <div class="reading-item">
+                        <div>
+                            <div class="reading-value">{{ leitura.valor }} <small class="text-muted">{{ leitura.unidade
+                                    }}</small></div>
+                            <small class="text-muted">{{ leitura.timestamp|date:"d/m/Y H:i:s" }}</small>
+                        </div>
+                        <div class="text-end">
+                            {% if leitura.qualidade_sinal == 'excellent' %}
+                            <i class="fas fa-signal text-success" title="Sinal Excelente"></i>
+                            {% elif leitura.qualidade_sinal == 'good' %}
+                            <i class="fas fa-signal text-primary" title="Sinal Bom"></i>
+                            {% elif leitura.qualidade_sinal == 'fair' %}
+                            <i class="fas fa-signal text-warning" title="Sinal Razoável"></i>
+                            {% else %}
+                            <i class="fas fa-signal text-danger" title="Sinal Ruim"></i>
+                            {% endif %}
+
+                            {% if leitura.processado %}
+                            <span class="badge bg-success ms-2">Processado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted">
+                        Nenhuma leitura registrada ainda.
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination Controls -->
+                {% if leituras.has_other_pages %}
+                <div class="pagination-controls mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="pagination-info">
+                            <small class="text-muted">
+                                Mostrando {{ leituras.start_index }}-{{ leituras.end_index }} de {{ total_leituras }} leituras
+                            </small>
+                        </div>
+                        <div class="pagination-buttons">
+                            <!-- First Page -->
+                            {% if leituras.has_previous %}
+                            <a href="?page=1" class="btn-pagination">
+                                <i class="fas fa-angle-double-left"></i> Primeiro
+                            </a>
+                            {% endif %}
+                            
+                            <!-- Previous Page -->
+                            {% if leituras.has_previous %}
+                            <a href="?page={{ leituras.previous_page_number }}" class="btn-pagination">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            {% endif %}
+                            
+                            <!-- Page Numbers -->
+                            <span class="current-page mx-2">
+                                Página {{ leituras.number }} de {{ leituras.paginator.num_pages }}
+                            </span>
+                            
+                            <!-- Next Page -->
+                            {% if leituras.has_next %}
+                            <a href="?page={{ leituras.next_page_number }}" class="btn-pagination">
+                                Próximo <i class="fas fa-chevron-right"></i>
+                            </a>
+                            {% endif %}
+                            
+                            <!-- Last Page -->
+                            {% if leituras.has_next %}
+                            <a href="?page={{ leituras.paginator.num_pages }}" class="btn-pagination">
+                                Último <i class="fas fa-angle-double-right"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Config -->
+            <div class="config-card">
+                <h3 class="h5 mb-4"><i class="fas fa-cog me-2 text-primary"></i>Configurações</h3>
+                {% if config %}
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>Intervalo de Leitura</label>
+                        <span>{{ config.intervalo_leitura }}s</span>
+                    </div>
+                    <div class="config-item">
+                        <label>Auto-Registro</label>
+                        <span>{% if config.criar_registro_automatico %}Sim{% else %}Não{% endif %}</span>
+                    </div>
+                    {% if config.valor_minimo_alerta %}
+                    <div class="config-item">
+                        <label>Alerta Mínimo</label>
+                        <span>{{ config.valor_minimo_alerta }}</span>
+                    </div>
+                    {% endif %}
+                    {% if config.valor_maximo_alerta %}
+                    <div class="config-item">
+                        <label>Alerta Máximo</label>
+                        <span>{{ config.valor_maximo_alerta }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">Nenhuma configuração específica definida.</p>
+                {% endif %}
+            </div>
+
+            <!-- Alerts -->
+            <div class="alerts-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 m-0"><i class="fas fa-bell me-2 text-primary"></i>Alertas Recentes</h3>
+                    {% if alertas_ativos > 0 %}
+                    <span class="badge bg-danger">{{ alertas_ativos }} ativos</span>
+                    {% endif %}
+                </div>
+
+                {% for alerta in alertas %}
+                <div class="alert-item alert-{{ alerta.severidade }}">
+                    <div class="flex-shrink-0 pt-1">
+                        {% if alerta.severidade == 'critical' %}
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                        {% elif alerta.severidade == 'warning' %}
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        {% else %}
+                        <i class="fas fa-info-circle text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="mb-1 fw-bold small">{{ alerta.mensagem }}</p>
+                        <small class="text-muted">{{ alerta.criado_em|timesince }} atrás</small>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0">Nenhum alerta recente.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript externo para o gráfico (SEM sintaxe Django) -->
+<script src="{% static 'js/device_detail_chart.js' %}"></script>
+
+<!-- Carregar Leaflet se for dispositivo GPS -->
+{% if dispositivo.tipo == 'gps' %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{{ coordenadas_mapa|json_script:"coordenadas-data" }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obter coordenadas do elemento script
+        const coordenadasElement = document.getElementById('coordenadas-data');
+        const coordenadas = coordenadasElement ? JSON.parse(coordenadasElement.textContent) : [];
+        
+        if (coordenadas && coordenadas.length > 0) {
+            // Inicializar o mapa
+            const map = L.map('map').setView([coordenadas[0].lat, coordenadas[0].lng], 13);
+            
+            // Adicionar camada do OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Adicionar marcadores para cada coordenada
+            coordenadas.forEach(function(coord, index) {
+                const marker = L.marker([coord.lat, coord.lng]).addTo(map);
+                
+                // Adicionar popup com informações da leitura
+                marker.bindPopup(`<b>Ponto ${index + 1}</b><br>
+                    Distância: ${coord.distancia} km<br>
+                    Velocidade: ${coord.speed} km/h<br>
+                    Altitude: ${coord.altitude} m<br>
+                    Data/Hora: ${new Date(coord.timestamp).toLocaleString('pt-BR')}<br>`);
+                
+                // Adicionar evento de clique para mostrar mais informações
+                marker.on('click', function(e) {
+                    console.log('Coordenada clicada:', coord);
+                });
+            });
+            
+            // Traçar rota entre os pontos
+            if (coordenadas.length > 1) {
+                const latlngs = coordenadas.map(coord => [coord.lat, coord.lng]);
+                const polyline = L.polyline(latlngs, {color: '#3498db', weight: 3}).addTo(map);
+                
+                // Ajustar a visualização para mostrar toda a rota
+                map.fitBounds(polyline.getBounds());
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

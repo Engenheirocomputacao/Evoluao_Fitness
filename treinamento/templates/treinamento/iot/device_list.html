@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meus Dispositivos - Evolução Fitness{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .feature-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.3s ease;
+    }
+
+    .feature-btn:hover::before {
+        left: 100%;
+    }
+
+    .feature-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .device-card-list {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .device-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .device-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .device-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: middle;
+    }
+
+    .device-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .device-table tr:hover {
+        background-color: #f8fafc;
+    }
+
+    .device-icon-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: white;
+        margin-right: 0.75rem;
+    }
+
+    .status-badge-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 1rem;
+        font-weight: 600;
+    }
+
+    .btn-action-sm {
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-action-sm:hover {
+        background-color: #e2e8f0;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .header-actions {
+            width: 100%;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .feature-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .device-table {
+            font-size: 0.875rem;
+        }
+
+        .device-table th,
+        .device-table td {
+            padding: 0.75rem 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard_view' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'iot_dashboard' %}">IoT</a></li>
+            <li class="breadcrumb-item active">Dispositivos</li>
+        </ol>
+    </nav>
+
+    <div class="page-header">
+        <h1 class="page-title">Gerenciar Dispositivos</h1>
+        <div class="header-actions">
+            <a href="{% url 'dashboard_view' %}" class="feature-btn">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="{% url 'iot_dashboard' %}" class="feature-btn" 
+               style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <i class="fas fa-microchip"></i>
+                IoT
+            </a>
+            <a href="{% url 'device_create' %}" class="feature-btn" 
+               style="background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);">
+                <i class="fas fa-plus"></i>
+                Inserir Dispositivo
+            </a>
+        </div>
+    </div>
+
+    {% if dispositivos %}
+    <div class="device-card-list">
+        <div class="table-responsive">
+            <table class="device-table">
+                <thead>
+                    <tr>
+                        <th>Dispositivo</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Última Atividade</th>
+                        <th>Leituras (Hoje)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dispositivo in dispositivos %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="device-icon-sm
+                                    {% if dispositivo.tipo == 'heartrate' %}bg-danger
+                                    {% elif dispositivo.tipo == 'steps' %}bg-primary
+                                    {% elif dispositivo.tipo == 'gps' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {% if dispositivo.tipo == 'heartrate' %}
+                                    <i class="fas fa-heartbeat"></i>
+                                    {% elif dispositivo.tipo == 'steps' %}
+                                    <i class="fas fa-walking"></i>
+                                    {% elif dispositivo.tipo == 'gps' %}
+                                    <i class="fas fa-location-dot"></i>
+                                    {% else %}
+                                    <i class="fas fa-microchip"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ dispositivo.nome }}</div>
+                                    <div class="small text-muted">{{ dispositivo.device_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ dispositivo.get_tipo_display }}</td>
+                        <td>
+                            <span
+                                class="status-badge-sm {% if dispositivo.esta_online %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                                {% if dispositivo.esta_online %}Online{% else %}Offline{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-muted small">
+                            {% if dispositivo.ultimo_ping %}
+                            {{ dispositivo.ultimo_ping|timesince }} atrás
+                            {% else %}
+                            Nunca
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">{{ dispositivo.leituras_hoje }}</td>
+                        <td>
+                            <a href="{% url 'device_detail' dispositivo.id %}"
+                                class="btn-action-sm text-primary bg-primary bg-opacity-10 me-2" title="Ver Detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <form action="{% url 'device_delete' dispositivo.id %}" method="POST" class="d-inline"
+                                onsubmit="return confirm('Confirmar exclusão?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-action-sm text-danger bg-danger bg-opacity-10 border-0"
+                                    title="Remover">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-white rounded-3 shadow-sm">
+        <i class="fas fa-microchip fa-3x text-muted mb-3"></i>
+        <h3>Nenhum dispositivo encontrado</h3>
+        <p class="text-muted mb-4">Conecte seus sensores e dispositivos para começar a monitorar.</p>
+        <a href="{% url 'device_create' %}" class="feature-btn" 
+           style="display: inline-flex; padding: 0.75rem 2rem;">
+            <i class="fas fa-plus"></i>
+            Cadastrar Dispositivo
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

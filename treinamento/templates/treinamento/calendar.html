@@ -1,0 +1,1223 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Calendário - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary-color: #4f46e5;
+        --primary-dark: #4338ca;
+        --secondary-color: #06b6d4;
+        --success-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --dark-color: #1f2937;
+        --light-color: #f9fafb;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #c4c6cf10 0%, #a898b818 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        text-align: center;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        color: rgb(255, 255, 255);
+    }
+
+    .page-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .back-button {
+        background: linear-gradient(135deg, #929fb9, #6484b1);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(107, 114, 128, 0.3);
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-button {
+        background: white;
+        color: var(--dark-color);
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-button:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .filter-button.active {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .calendar-container::after {
+        content: '← →';
+        position: absolute;
+        bottom: 10px;
+        right: 20px;
+        color: #ccc;
+        font-size: 12px;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .calendar-container::after {
+            content: '← →';
+        }
+    }
+
+    .calendar-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .nav-button {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        min-width: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .calendar-month-year {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 1rem;
+    }
+
+    .calendar-day-header {
+        text-align: center;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding: 0.5rem;
+        background-color: #f3f4f6;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        min-width: 40px;
+    }
+
+    .calendar-day {
+        min-height: 100px;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        background-color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        min-width: 40px;
+    }
+
+    .calendar-day:hover {
+        background-color: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .calendar-day.empty {
+        background-color: #f9fafb;
+        opacity: 0.5;
+    }
+
+    .calendar-day-number {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day.has-activity {
+        border-color: var(--primary-color);
+        background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .calendar-day.has-activity .calendar-day-number {
+        color: var(--primary-color);
+    }
+
+    .calendar-activities {
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .calendar-activity {
+        font-size: 0.7rem;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .calendar-activity-icon {
+        margin-right: 0.25rem;
+        color: var(--primary-color);
+        font-size: 0.6rem;
+    }
+
+    .activity-details {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-details-title {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .activity-date {
+        color: var(--primary-color);
+    }
+
+    .activity-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .activity-item {
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .activity-treinamento {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 0.95rem;
+    }
+
+    .activity-valor {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+
+    .activity-observacoes {
+        font-size: 0.8rem;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .no-activities {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+    }
+
+    .no-activities-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #d1d5db;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1rem;
+        }
+
+        .navigation-buttons {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .calendar-container {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .calendar-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .calendar-month-year {
+            margin: 0.5rem 0;
+        }
+
+        .nav-button {
+            min-width: auto;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .calendar-grid {
+            gap: 0.25rem;
+            min-width: 100%;
+        }
+
+        .calendar-day-header {
+            font-size: 0.7rem;
+            padding: 0.25rem;
+            min-width: 35px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            padding: 0.25rem;
+            min-width: 35px;
+        }
+
+        .calendar-day-number {
+            font-size: 0.75rem;
+        }
+
+        .calendar-activity {
+            font-size: 0.6rem;
+        }
+
+        .calendar-activity-icon {
+            font-size: 0.5rem;
+        }
+
+        .activity-header {
+            flex-direction: column;
+        }
+
+        .activity-treinamento,
+        .activity-valor {
+            font-size: 0.85rem;
+        }
+
+        .activity-observacoes {
+            font-size: 0.7rem;
+        }
+
+        .activity-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .calendar-grid {
+            gap: 0.15rem;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .calendar-day-header {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.1rem;
+            min-width: auto;
+        }
+
+        .calendar-day {
+            min-height: 65px;
+            padding: 0.2rem;
+            min-width: auto;
+        }
+
+        .calendar-day-number {
+            font-size: 0.7rem;
+        }
+
+        .calendar-activity {
+            font-size: 0.5rem;
+        }
+
+        .activity-details {
+            padding: 1rem;
+        }
+    }
+    
+    /* High Contrast Mode - Calendar Page Specific */
+    .high-contrast .page-header {
+        background: #000000 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .page-title,
+    .high-contrast .page-subtitle {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .navigation-buttons {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .back-button {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .back-button:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .filter-button {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .filter-button:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .filter-button.active {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .calendar-container {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-nav {
+        background: #333333 !important;
+        border-bottom: 1px solid #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-month-year {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .nav-button {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .nav-button:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .calendar-day-header {
+        background: #333333 !important;
+        color: #ffff00 !important;
+        border: 1px solid #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-day {
+        background: #000000 !important;
+        border: 1px solid #333333 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-day:hover {
+        background: #333333 !important;
+        border-color: #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-day.today {
+        background: #333333 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-day.has-activity {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .calendar-day.has-activity:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .calendar-day.other-month {
+        background: #000000 !important;
+        color: #666666 !important;
+    }
+    
+    .high-contrast .day-number {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .activity-count {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+    
+    .high-contrast .activity-details {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .activity-details-title {
+        background: #333333 !important;
+        border-bottom: 1px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .activity-date {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .no-activities {
+        background: #000000 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .no-activities h3 {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .no-activities p {
+        color: #cccccc !important;
+    }
+    
+    .high-contrast .no-activities-icon {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .error-message {
+        background: #333333 !important;
+        border: 2px solid #ff0000 !important;
+        color: #ff0000 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Calendário de Atividades</h1>
+    <p class="page-subtitle">Visualize e gerencie suas atividades de treinamento</p>
+</div>
+
+<div class="navigation-buttons">
+    <a href="{% url 'home_view' %}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        Voltar para Página Inicial
+    </a>
+
+    <div class="filter-buttons">
+        <button class="filter-button active" data-filter="month">
+            <i class="fas fa-calendar-alt"></i>
+            Mês
+        </button>
+        <button class="filter-button" data-filter="week">
+            <i class="fas fa-calendar-week"></i>
+            Semana
+        </button>
+        <button class="filter-button" data-filter="fortnight">
+            <i class="fas fa-calendar-day"></i>
+            Quinzena
+        </button>
+        <button class="filter-button" data-filter="year">
+            <i class="fas fa-calendar"></i>
+            Ano
+        </button>
+    </div>
+</div>
+
+<div class="calendar-container">
+    <div class="calendar-nav">
+        <button id="prevPeriod" class="nav-button">
+            <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <div class="calendar-month-year" id="calendarPeriod">Carregando...</div>
+        <button id="nextPeriod" class="nav-button">
+            Próximo <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="calendar-grid" id="calendarGrid">
+        <!-- Calendar will be populated by JavaScript -->
+    </div>
+</div>
+
+<div class="activity-details">
+    <div class="activity-details-title">
+        <span>Atividades do Dia <span class="activity-date" id="activityDate"></span></span>
+        <button id="closeActivityDetails" class="nav-button" style="padding: 0.25rem 0.5rem; min-width: auto;">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div id="activitiesList">
+        <div class="no-activities">
+            <div class="no-activities-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3>Selecione um dia para ver as atividades</h3>
+            <p>Clique em um dia do calendário para visualizar as atividades registradas</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const prevPeriodBtn = document.getElementById('prevPeriod');
+        const nextPeriodBtn = document.getElementById('nextPeriod');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const calendarPeriod = document.getElementById('calendarPeriod');
+        const activityDate = document.getElementById('activityDate');
+        const activitiesList = document.getElementById('activitiesList');
+        const closeActivityDetails = document.getElementById('closeActivityDetails');
+        const filterButtons = document.querySelectorAll('.filter-button');
+
+        let currentDate = new Date();
+        let currentFilter = 'month'; // month, week, fortnight, year
+        let calendarData = {};
+
+        // Set up filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.filter;
+                loadCalendarData();
+            });
+        });
+
+        // Navigation buttons
+        prevPeriodBtn.addEventListener('click', function () {
+            navigatePeriod(-1);
+            loadCalendarData();
+        });
+
+        nextPeriodBtn.addEventListener('click', function () {
+            navigatePeriod(1);
+            loadCalendarData();
+        });
+
+        // Close activity details
+        closeActivityDetails.addEventListener('click', function () {
+            activitiesList.innerHTML = `
+            <div class="no-activities">
+                <div class="no-activities-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>Selecione um dia para ver as atividades</h3>
+                <p>Clique em um dia do calendário para visualizar as atividades registradas</p>
+            </div>
+        `;
+        });
+
+        // Navigate period based on filter
+        function navigatePeriod(direction) {
+            switch (currentFilter) {
+                case 'week':
+                    currentDate.setDate(currentDate.getDate() + (direction * 7));
+                    break;
+                case 'fortnight':
+                    currentDate.setDate(currentDate.getDate() + (direction * 14));
+                    break;
+                case 'month':
+                    currentDate.setMonth(currentDate.getMonth() + direction);
+                    break;
+                case 'year':
+                    currentDate.setFullYear(currentDate.getFullYear() + direction);
+                    break;
+            }
+        }
+
+        // Load calendar data
+        function loadCalendarData() {
+            switch (currentFilter) {
+                case 'week':
+                    loadWeekCalendar();
+                    break;
+                case 'fortnight':
+                    loadFortnightCalendar();
+                    break;
+                case 'month':
+                    loadMonthCalendar();
+                    break;
+                case 'year':
+                    loadYearCalendar();
+                    break;
+            }
+        }
+
+        // Load month calendar
+        function loadMonthCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1;
+
+            // Update period display
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            calendarPeriod.textContent = `${monthNames[month - 1]} ${year}`;
+
+            // Fetch calendar data
+            fetch(`/api/calendar-data/?month=${month}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    calendarData = data.registros;
+                    renderMonthCalendar(year, month, data.registros);
+                })
+                .catch(error => {
+                    console.error('Error loading calendar:', error);
+                    calendarGrid.innerHTML = '<div class="error-message">Erro ao carregar o calendário</div>';
+                });
+        }
+
+        // Render month calendar grid
+        function renderMonthCalendar(year, month, registros) {
+            // Clear grid
+            calendarGrid.innerHTML = '';
+
+            // Add day headers
+            const dayHeaders = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                calendarGrid.appendChild(emptyDay);
+            }
+
+            // Add cells for each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+
+                // Check if day has activities
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasActivities = registros[dateStr] && registros[dateStr].length > 0;
+
+                // Create container for activities
+                const activitiesContainer = document.createElement('div');
+                activitiesContainer.className = 'calendar-activities';
+
+                if (hasActivities) {
+                    dayCell.classList.add('has-activity');
+
+                    // Add activity indicators
+                    const activitiesToShow = registros[dateStr].slice(0, 3);
+                    activitiesToShow.forEach(activity => {
+                        const activityEl = document.createElement('div');
+                        activityEl.className = 'calendar-activity';
+                        activityEl.innerHTML = `<i class="fas fa-dumbbell calendar-activity-icon"></i> ${activity.treinamento}: ${activity.valor} ${activity.unidade}`;
+                        activitiesContainer.appendChild(activityEl);
+                    });
+
+                    // Show "+n more" if there are more activities
+                    if (registros[dateStr].length > 3) {
+                        const moreEl = document.createElement('div');
+                        moreEl.className = 'calendar-activity';
+                        moreEl.textContent = `+${registros[dateStr].length - 3} mais`;
+                        activitiesContainer.appendChild(moreEl);
+                    }
+                }
+
+                // Add day number
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'calendar-day-number';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+
+                // Add activities container
+                dayCell.appendChild(activitiesContainer);
+
+                // Add click event to show activities
+                dayCell.addEventListener('click', function () {
+                    showActivitiesForDay(dateStr, day, registros[dateStr] || []);
+                });
+
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        // Load week calendar
+        function loadWeekCalendar() {
+            const startDate = new Date(currentDate);
+            const dayOfWeek = startDate.getDay();
+            startDate.setDate(startDate.getDate() - dayOfWeek); // Start from Sunday
+
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 6); // End on Saturday
+
+            // Update period display
+            const options = { day: '2-digit', month: 'short' };
+            calendarPeriod.textContent = `${startDate.toLocaleDateString('pt-BR', options)} - ${endDate.toLocaleDateString('pt-BR', options)} de ${startDate.getFullYear() !== endDate.getFullYear() ? startDate.getFullYear() + '-' + endDate.getFullYear() : startDate.getFullYear()}`;
+
+            // Check if week spans across two years
+            if (startDate.getFullYear() !== endDate.getFullYear()) {
+                // Fetch data for both years
+                const startYear = startDate.getFullYear();
+                const startMonth = startDate.getMonth() + 1;
+                const endYear = endDate.getFullYear();
+                const endMonth = endDate.getMonth() + 1;
+
+                // Fetch data for both months/years and combine them
+                Promise.all([
+                    fetch(`/api/calendar-data/?month=${startMonth}&year=${startYear}`).then(response => response.json()),
+                    fetch(`/api/calendar-data/?month=${endMonth}&year=${endYear}`).then(response => response.json())
+                ])
+                    .then(([data1, data2]) => {
+                        // Combine the registros from both years
+                        const combinedRegistros = { ...data1.registros, ...data2.registros };
+                        calendarData = combinedRegistros;
+                        renderWeekCalendar(startDate, combinedRegistros);
+                    })
+                    .catch(error => {
+                        console.error('Error loading calendar:', error);
+                        calendarGrid.innerHTML = '<div class="error-message">Erro ao carregar o calendário</div>';
+                    });
+            } else {
+                // Same year, proceed as before
+                const month = startDate.getMonth() + 1;
+                const year = startDate.getFullYear();
+
+                // Fetch calendar data
+                fetch(`/api/calendar-data/?month=${month}&year=${year}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        calendarData = data.registros;
+                        renderWeekCalendar(startDate, data.registros);
+                    })
+                    .catch(error => {
+                        console.error('Error loading calendar:', error);
+                        calendarGrid.innerHTML = '<div class="error-message">Erro ao carregar o calendário</div>';
+                    });
+            }
+        }
+
+        // Render week calendar grid
+        function renderWeekCalendar(startDate, registros) {
+            // Clear grid
+            calendarGrid.innerHTML = '';
+
+            // Add day headers
+            const dayHeaders = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            dayHeaders.forEach((day, index) => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + index);
+                dayHeader.textContent = `${day} ${date.getDate()}`;
+                calendarGrid.appendChild(dayHeader);
+            });
+
+            // Add cells for each day of the week
+            for (let i = 0; i < 7; i++) {
+                const dayDate = new Date(startDate);
+                dayDate.setDate(dayDate.getDate() + i);
+
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+
+                const year = dayDate.getFullYear();
+                const month = String(dayDate.getMonth() + 1).padStart(2, '0');
+                const day = String(dayDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+
+                // Check if day has activities
+                const hasActivities = registros[dateStr] && registros[dateStr].length > 0;
+
+                // Create container for activities
+                const activitiesContainer = document.createElement('div');
+                activitiesContainer.className = 'calendar-activities';
+
+                if (hasActivities) {
+                    dayCell.classList.add('has-activity');
+
+                    // Add activity indicators
+                    const activitiesToShow = registros[dateStr].slice(0, 3);
+                    activitiesToShow.forEach(activity => {
+                        const activityEl = document.createElement('div');
+                        activityEl.className = 'calendar-activity';
+                        activityEl.innerHTML = `<i class="fas fa-dumbbell calendar-activity-icon"></i> ${activity.treinamento}: ${activity.valor} ${activity.unidade}`;
+                        activitiesContainer.appendChild(activityEl);
+                    });
+
+                    // Show "+n more" if there are more activities
+                    if (registros[dateStr].length > 3) {
+                        const moreEl = document.createElement('div');
+                        moreEl.className = 'calendar-activity';
+                        moreEl.textContent = `+${registros[dateStr].length - 3} mais`;
+                        activitiesContainer.appendChild(moreEl);
+                    }
+                }
+
+                // Add day number
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'calendar-day-number';
+                dayNumber.textContent = dayDate.getDate();
+                dayCell.appendChild(dayNumber);
+
+                // Add activities container
+                dayCell.appendChild(activitiesContainer);
+
+                // Add click event to show activities
+                dayCell.addEventListener('click', function () {
+                    showActivitiesForDay(dateStr, dayDate.getDate(), registros[dateStr] || []);
+                });
+
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        // Load fortnight calendar
+        function loadFortnightCalendar() {
+            const startDate = new Date(currentDate);
+            const dayOfMonth = startDate.getDate();
+
+            // Determine if it's first or second fortnight
+            if (dayOfMonth <= 15) {
+                startDate.setDate(1); // First day of month
+            } else {
+                startDate.setDate(16); // 16th day of month
+            }
+
+            const endDate = new Date(startDate);
+            if (dayOfMonth <= 15) {
+                endDate.setDate(15); // 15th day of month
+            } else {
+                endDate.setMonth(endDate.getMonth() + 1, 0); // Last day of month
+            }
+
+            // Update period display
+            const options = { day: '2-digit', month: 'short' };
+            calendarPeriod.textContent = `${startDate.toLocaleDateString('pt-BR', options)} - ${endDate.toLocaleDateString('pt-BR', options)} de ${startDate.getFullYear() !== endDate.getFullYear() ? startDate.getFullYear() + '-' + endDate.getFullYear() : startDate.getFullYear()}`;
+
+            // Check if fortnight spans across two years
+            if (startDate.getFullYear() !== endDate.getFullYear()) {
+                // Fetch data for both years
+                const startYear = startDate.getFullYear();
+                const startMonth = startDate.getMonth() + 1;
+                const endYear = endDate.getFullYear();
+                const endMonth = endDate.getMonth() + 1;
+
+                // Fetch data for both months/years and combine them
+                Promise.all([
+                    fetch(`/api/calendar-data/?month=${startMonth}&year=${startYear}`).then(response => response.json()),
+                    fetch(`/api/calendar-data/?month=${endMonth}&year=${endYear}`).then(response => response.json())
+                ])
+                    .then(([data1, data2]) => {
+                        // Combine the registros from both years
+                        const combinedRegistros = { ...data1.registros, ...data2.registros };
+                        calendarData = combinedRegistros;
+                        renderFortnightCalendar(startDate, endDate, combinedRegistros);
+                    })
+                    .catch(error => {
+                        console.error('Error loading calendar:', error);
+                        calendarGrid.innerHTML = '<div class="error-message">Erro ao carregar o calendário</div>';
+                    });
+            } else {
+                // Same year, proceed as before
+                const month = startDate.getMonth() + 1;
+                const year = startDate.getFullYear();
+
+                // Fetch calendar data
+                fetch(`/api/calendar-data/?month=${month}&year=${year}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        calendarData = data.registros;
+                        renderFortnightCalendar(startDate, endDate, data.registros);
+                    })
+                    .catch(error => {
+                        console.error('Error loading calendar:', error);
+                        calendarGrid.innerHTML = '<div class="error-message">Erro ao carregar o calendário</div>';
+                    });
+            }
+        }
+
+        // Render fortnight calendar grid
+        function renderFortnightCalendar(startDate, endDate, registros) {
+            // Clear grid
+            calendarGrid.innerHTML = '';
+
+            // Add day headers (static weekday names)
+            const dayHeaders = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+
+            // Get the day of week for the first day (0 = Sunday, 6 = Saturday)
+            const firstDayOfWeek = startDate.getDay();
+
+            // Add empty cells for days before the first day of the fortnight
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                calendarGrid.appendChild(emptyDay);
+            }
+
+            // Add cells for each day of the fortnight
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            for (let i = 0; i < totalDays; i++) {
+                const dayDate = new Date(startDate);
+                dayDate.setDate(dayDate.getDate() + i);
+
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+
+                const year = dayDate.getFullYear();
+                const month = String(dayDate.getMonth() + 1).padStart(2, '0');
+                const day = String(dayDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
+
+                // Check if day has activities
+                const hasActivities = registros[dateStr] && registros[dateStr].length > 0;
+
+                // Create container for activities
+                const activitiesContainer = document.createElement('div');
+                activitiesContainer.className = 'calendar-activities';
+
+                if (hasActivities) {
+                    dayCell.classList.add('has-activity');
+
+                    // Add activity indicators
+                    const activitiesToShow = registros[dateStr].slice(0, 3);
+                    activitiesToShow.forEach(activity => {
+                        const activityEl = document.createElement('div');
+                        activityEl.className = 'calendar-activity';
+                        activityEl.innerHTML = `<i class="fas fa-dumbbell calendar-activity-icon"></i> ${activity.treinamento}: ${activity.valor} ${activity.unidade}`;
+                        activitiesContainer.appendChild(activityEl);
+                    });
+
+                    // Show "+n more" if there are more activities
+                    if (registros[dateStr].length > 3) {
+                        const moreEl = document.createElement('div');
+                        moreEl.className = 'calendar-activity';
+                        moreEl.textContent = `+${registros[dateStr].length - 3} mais`;
+                        activitiesContainer.appendChild(moreEl);
+                    }
+                }
+
+                // Add day number
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'calendar-day-number';
+                dayNumber.textContent = dayDate.getDate();
+                dayCell.appendChild(dayNumber);
+
+                // Add activities container
+                dayCell.appendChild(activitiesContainer);
+
+                // Add click event to show activities
+                dayCell.addEventListener('click', function () {
+                    showActivitiesForDay(dateStr, dayDate.getDate(), registros[dateStr] || []);
+                });
+
+                calendarGrid.appendChild(dayCell);
+            }
+
+            // Add empty cells if needed to complete the grid
+            const totalCells = Math.ceil(totalDays / 7) * 7;
+            for (let i = totalDays; i < totalCells; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                calendarGrid.appendChild(emptyDay);
+            }
+        }
+
+        // Load year calendar (simplified view showing months)
+        function loadYearCalendar() {
+            const year = currentDate.getFullYear();
+
+            // Update period display
+            calendarPeriod.textContent = `Ano ${year}`;
+
+            // Clear grid
+            calendarGrid.innerHTML = '';
+
+            // Add month headers
+            const monthHeaders = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            monthHeaders.forEach(month => {
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'calendar-day-header';
+                monthHeader.textContent = month;
+                calendarGrid.appendChild(monthHeader);
+            });
+
+            // Add cells for each month
+            for (let month = 1; month <= 12; month++) {
+                const monthCell = document.createElement('div');
+                monthCell.className = 'calendar-day';
+
+                // Add month number
+                const monthNumber = document.createElement('div');
+                monthNumber.className = 'calendar-day-number';
+                monthNumber.textContent = month;
+                monthCell.appendChild(monthNumber);
+
+                // Add click event to show month view
+                monthCell.addEventListener('click', function () {
+                    // Switch to month view for this month
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelector('[data-filter="month"]').classList.add('active');
+                    currentFilter = 'month';
+                    currentDate = new Date(year, month - 1, 1);
+                    loadMonthCalendar();
+                });
+
+                calendarGrid.appendChild(monthCell);
+            }
+        }
+
+        // Show activities for selected day
+        function showActivitiesForDay(dateStr, day, activities) {
+            // Show activity details
+            const date = new Date(dateStr);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            activityDate.textContent = date.toLocaleDateString('pt-BR', options);
+            activitiesList.innerHTML = '';
+
+            if (activities.length > 0) {
+                const activityList = document.createElement('div');
+                activityList.className = 'activity-list';
+
+                activities.forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item';
+                    activityItem.innerHTML = `
+                    <div class="activity-header">
+                        <div class="activity-treinamento">${activity.treinamento}</div>
+                        <div class="activity-valor">${activity.valor} ${activity.unidade}</div>
+                    </div>
+                    ${activity.observacoes ? `<div class="activity-observacoes">${activity.observacoes}</div>` : ''}
+                `;
+                    activityList.appendChild(activityItem);
+                });
+
+                activitiesList.appendChild(activityList);
+            } else {
+                activitiesList.innerHTML = `
+                <div class="no-activities">
+                    <div class="no-activities-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3>Nenhuma atividade registrada</h3>
+                    <p>Não há atividades registradas para este dia.</p>
+                </div>
+            `;
+            }
+        }
+
+        // Initialize with month view
+        loadMonthCalendar();
+    });
+</script>
+{% endblock %}

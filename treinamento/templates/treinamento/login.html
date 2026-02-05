@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_head %}
+<style>
+    .captcha-section {
+        margin: 1rem 0;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+    
+    .captcha-checkbox {
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-form">
+    <h2>Entrar</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="captcha-section">
+            <label>
+                <input type="checkbox" name="captcha_verified" class="captcha-checkbox" required>
+                Não sou um robô
+            </label>
+        </div>
+        <button type="submit">Entrar</button>
+    </form>
+    <p>Não tem uma conta? <a href="{% url 'register_view' %}">Registre-se aqui</a>.</p>
+</div>
+{% endblock %}

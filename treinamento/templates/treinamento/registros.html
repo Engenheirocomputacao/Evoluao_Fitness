@@ -1,0 +1,1279 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registros de Treinamento - {{ individuo.nome_completo }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: rgba(0, 0, 0, 0);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        min-width: 120px;
+    }
+    
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+    
+    .btn-back i {
+        transition: transform 0.3s ease;
+    }
+    
+    .btn-back:hover i {
+        transform: translateX(-3px);
+    }
+
+    .records-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .records-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+    }
+
+    .records-table th,
+    .records-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: middle;
+    }
+    
+    /* Ajustes para a coluna de ações em telas pequenas */
+    .records-table td:last-child {
+        position: sticky;
+        right: 0;
+        background: white;
+        z-index: 1;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+    }
+    
+    /* Ajuste para garantir que a tabela ocupe toda a largura disponível */
+    .table-responsive {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    
+    /* Ajuste para os botões em telas pequenas */
+    @media (max-width: 767.98px) {
+        .records-table {
+            width: 100%;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+        
+        .records-table td:last-child {
+            position: sticky;
+            right: 0;
+            background: white;
+            z-index: 2;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn-group-sm > .btn, 
+        .btn-group-sm > .btn-group > .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+    }
+
+    .records-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .records-table tr:hover {
+        background-color: #f3f4f6;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        color: var(--primary-color);
+        border: 1px solid #e5e7eb;
+    }
+
+    .pagination .current {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .btn-add-record {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-add-record:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    /* Estilos para os botões de ação */
+    .btn-group .btn {
+        margin-right: 0.25rem;
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    /* Estilos específicos para os botões de editar e deletar */
+    .btn-edit {
+        background-color: #0d6efd;
+        /* Azul */
+        border-color: #0d6efd;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #0b5ed7;
+        /* Azul mais escuro */
+        border-color: #0a58ca;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        /* Vermelho */
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #bb2d3b;
+        /* Vermelho mais escuro */
+        border-color: #b02a37;
+    }
+    
+    /* Estilos responsivos para os botões de ação */
+    .btn-group {
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .btn i {
+        font-size: 0.8rem;
+    }
+    
+    /* Estilo para permitir rolagem horizontal da tabela em dispositivos móveis */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+    
+    /* Indicador visual de rolagem horizontal */
+    .table-responsive::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Ajuste do tamanho dos botões em telas pequenas */
+    @media (max-width: 576px) {
+        .btn-group .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+            margin-right: 0.1rem;
+        }
+        
+        .btn-group .btn i {
+            font-size: 0.75rem;
+        }
+        
+        /* Ajuste da tabela em telas pequenas */
+        .records-table {
+            font-size: 0.85rem;
+        }
+        
+        .records-table th,
+        .records-table td {
+            padding: 0.3rem;
+        }
+        
+        /* Layout dos botões em telas muito pequenas */
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group .btn {
+            flex: 1 0 auto;
+            min-width: 45%;
+            margin-bottom: 0.1rem;
+        }
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    /* Estilo específico para paginação */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .pagination .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        margin: 0.125rem;
+    }
+    
+    .pagination .btn i {
+        font-size: 0.875rem;
+    }
+    
+    .pagination .page-info {
+        margin: 0 0.5rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .records-section {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+        }
+
+        .records-table th,
+        .records-table td {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-add-record {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .stats-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Ajustes específicos para paginação em dispositivos móveis */
+        .pagination {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+        
+        .pagination .btn {
+            flex: 1;
+            justify-content: center;
+            margin: 0;
+            padding: 0.75rem;
+        }
+        
+        .pagination .page-info {
+            text-align: center;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+        }
+        
+        /* Ajustes para botões de ação em dispositivos móveis */
+        .btn-group {
+            flex-wrap: nowrap;
+        }
+        
+        .btn-group .btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.125rem;
+        }
+        
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+        
+        .btn-group .btn i {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .records-table {
+            font-size: 0.75rem;
+        }
+
+        .records-table th,
+        .records-table td {
+            padding: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+        }
+
+        .stats-summary {
+            grid-template-columns: 1fr;
+        }
+        
+        /* Ajustes para telas muito pequenas */
+        .pagination .btn {
+            padding: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .pagination .btn i {
+            font-size: 0.8rem;
+        }
+        
+        .pagination .page-info {
+            font-size: 0.8rem;
+            padding: 0.25rem;
+        }
+        
+        /* Ajustes para botões de ação em telas muito pequenas */
+        .btn-group {
+            flex-direction: row;
+            flex-wrap: wrap;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+            font-size: 0.65rem;
+            padding: 0.3rem 0.4rem;
+            margin-right: 0.1rem;
+            min-width: 45%;
+        }
+        
+        .btn-group .btn i {
+            font-size: 0.7rem;
+        }
+    }
+    
+    /* High Contrast Mode Fixes for Records Table */
+    .high-contrast .registro-row {
+        background-color: #000 !important;
+        color: #fff !important;
+    }
+    
+    .high-contrast .registro-row:hover {
+        background-color: #111 !important;
+        border-left: 3px solid #ffff00 !important;
+    }
+    
+    .high-contrast .cell-value {
+        color: #fff !important;
+        font-weight: 500 !important;
+    }
+    
+    .high-contrast .row-label {
+        color: #ffff00 !important;
+        font-weight: 600 !important;
+    }
+    
+    .high-contrast .records-table th {
+        background-color: #000 !important;
+        color: #ffff00 !important;
+        border-bottom: 2px solid #fff !important;
+    }
+    
+    .high-contrast .records-table td {
+        border-bottom: 1px solid #444 !important;
+    }
+    
+    .high-contrast .records-table tr {
+        background-color: #000 !important;
+    }
+    
+    .high-contrast .records-table tr:nth-child(even) {
+        background-color: #111 !important;
+    }
+    
+    /* High Contrast for Mobile Table View */
+    @media (max-width: 767.98px) {
+        .high-contrast .table-responsive {
+            background-color: #000 !important;
+        }
+        
+        .high-contrast .registro-row .cell-value {
+            color: #fff !important;
+            background-color: transparent !important;
+        }
+        
+        .high-contrast .registro-row .row-label {
+            color: #ffff00 !important;
+            background-color: #000 !important;
+            border-bottom: 1px solid #444 !important;
+        }
+    }
+    
+    /* High Contrast for Pagination */
+    .high-contrast .pagination .btn {
+        background-color: #ffff00 !important;
+        color: #000 !important;
+        border: 2px solid #fff !important;
+    }
+    
+    .high-contrast .pagination .btn:hover {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+    
+    .high-contrast .pagination .btn.disabled {
+        background-color: #333 !important;
+        color: #666 !important;
+        border: 2px solid #444 !important;
+    }
+    
+    .high-contrast .page-info {
+        color: #fff !important;
+        background-color: #000 !important;
+        border: 1px solid #fff !important;
+    }
+    
+    /* High Contrast Improvements for Registros Page */
+    .high-contrast .page-header {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .page-title,
+    .high-contrast .page-subtitle {
+        color: #ffff00 !important;
+        text-shadow: none !important;
+    }
+    
+    .high-contrast .btn-back {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-back:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .records-section {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .records-section:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .section-title {
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .form-group label {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .form-control:focus {
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .high-contrast .form-control:disabled {
+        background: #333333 !important;
+        color: #cccccc !important;
+        border-color: #666666 !important;
+    }
+    
+    .high-contrast .form-text {
+        color: #cccccc !important;
+    }
+    
+    .high-contrast .text-danger {
+        color: #ff0000 !important;
+    }
+    
+    .high-contrast .alert {
+        background: #333333 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .alert-danger {
+        border-color: #ff0000 !important;
+        color: #ff0000 !important;
+    }
+    
+    .high-contrast .btn-add-record {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-add-record:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .btn-edit {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-edit:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .btn-delete {
+        background: #ff0000 !important;
+        color: #ffffff !important;
+        border: 2px solid #ffffff !important;
+    }
+    
+    .high-contrast .btn-delete:hover {
+        background: #ffffff !important;
+        color: #ff0000 !important;
+        border-color: #ff0000 !important;
+    }
+    
+    .high-contrast .btn-outline-secondary {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .btn-outline-secondary:hover {
+        background: #333333 !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .stat-item {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .stat-item:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .stat-value,
+    .high-contrast .stat-label {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast select.form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23ffff00' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    }
+    
+    .high-contrast textarea.form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .empty-state {
+        background: #000000 !important;
+        border: 2px dashed #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .empty-state h4 {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .empty-state p {
+        color: #cccccc !important;
+    }
+    
+    /* Ensure form actions buttons are visible */
+    .high-contrast .form-actions {
+        background: #000000 !important;
+        padding: 1rem 0 !important;
+        border-top: 1px solid #333333 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-clipboard-list"></i>
+            Meus Registros
+        </h1>
+        <p class="page-subtitle">Gerencie e acompanhe seu histórico de treinamento</p>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex justify-content-center w-100">
+        <a href="{% url 'home_view' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+    <!-- Formulário de Novo Registro -->
+    <div class="records-section">
+        <h2 class="section-title">
+            <i class="fas fa-plus-circle"></i>
+            <span id="form-title">Adicionar Novo Registro</span>
+        </h2>
+
+        <form method="post" id="registro-form">
+            {% csrf_token %}
+            <input type="hidden" name="registro_id" id="registro-id" value="">
+
+            <!-- Mostrar mensagens de erro do formulário -->
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="form-group mb-3">
+                <label for="{{ form.treinamento.id_for_label }}">Tipo de Treinamento *</label>
+                {{ form.treinamento }}
+                {% if form.treinamento.errors %}
+                <div class="text-danger">
+                    {{ form.treinamento.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="{{ form.data.id_for_label }}">Data *</label>
+                <input type="text" name="data" id="id_data" 
+                       class="form-control" 
+                       placeholder="DD/MM/AAAA"
+                       maxlength="10"
+                       inputmode="numeric"
+                       pattern="\d{2}/\d{2}/\d{4}"
+                       title="Formato: DD/MM/AAAA"
+                       {% if form.data.value %}value="{{ form.data.value|date:'d/m/Y' }}"{% endif %}>
+                {% if form.data.errors %}
+                <div class="text-danger">
+                    {{ form.data.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="{{ form.valor_alcançado.id_for_label }}">Valor Alcançado *</label>
+                {{ form.valor_alcançado }}
+                {% if form.valor_alcançado.errors %}
+                <div class="text-danger">
+                    {{ form.valor_alcançado.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="{{ form.duracao.id_for_label }}">Duração</label>
+                <input type="text" name="duracao" id="id_duracao" 
+                       class="form-control" 
+                       placeholder="HH:MM"
+                       maxlength="5"
+                       inputmode="numeric"
+                       pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                       title="Formato: HH:MM (ex: 01:30)"
+                       {% if form.duracao.value %}value="{{ form.duracao.value|time:'H:i' }}"{% endif %}>
+                {% if form.duracao.errors %}
+                <div class="text-danger">
+                    {{ form.duracao.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Formato HH:MM (opcional)</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="{{ form.esforco_percebido.id_for_label }}">Esforço Percebido (1-10)</label>
+                {{ form.esforco_percebido }}
+                {% if form.esforco_percebido.errors %}
+                <div class="text-danger">
+                    {{ form.esforco_percebido.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Escala de 1 a 10, onde 1 é muito fácil e 10 é muito difícil</small>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="{{ form.observacoes.id_for_label }}">Observações</label>
+                {{ form.observacoes }}
+                {% if form.observacoes.errors %}
+                <div class="text-danger">
+                    {{ form.observacoes.errors }}
+                </div>
+                {% endif %}
+                <small class="form-text text-muted">Máximo de 500 caracteres</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-add-record">
+                    <i class="fas fa-save"></i>
+                    <span id="submit-btn-text">Registrar Treinamento</span>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="cancel-edit" style="display: none;">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Histórico de Registros -->
+    <div class="records-section">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i>
+            Histórico de Registros
+        </h2>
+
+        {% if registros %}
+        <div class="table-responsive">
+            <table class="records-table">
+                <thead class="d-none d-md-table-row">
+                    <tr>
+                        <th>Treinamento</th>
+                        <th>Data</th>
+                        <th>Valor</th>
+                        <th>Duração</th>
+                        <th>Esforço</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registro in registros %}
+                    <tr id="registro-{{ registro.id }}" class="registro-row">
+                        <td class="d-none d-md-table-cell">
+                            <div class="d-md-none row-label">Treinamento:</div>
+                            <div class="cell-value">{{ registro.treinamento.nome }}</div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <div class="d-md-none row-label">Data:</div>
+                            <div class="cell-value">{{ registro.data|date:"d/m/Y" }}</div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <div class="d-md-none row-label">Valor:</div>
+                            <div class="cell-value">{{ registro.valor_alcançado|floatformat:2 }} {{ registro.treinamento.unidade_medida }}</div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <div class="d-md-none row-label">Duração:</div>
+                            <div class="cell-value">{{ registro.duracao|time:'H:i'|default:"-" }}</div>
+                        </td>
+                        <td class="d-none d-md-table-cell">
+                            <div class="d-md-none row-label">Esforço:</div>
+                            <div class="cell-value">{{ registro.esforco_percebido|default:"-" }}</div>
+                        </td>
+                        <td class="text-center" style="min-width: 120px;">
+                            <div class="d-flex flex-nowrap justify-content-center">
+                                <!-- Botão Editar -->
+                                <button class="btn btn-sm btn-edit edit-btn me-1" data-registro-id="{{ registro.id }}"
+                                    data-treinamento-id="{{ registro.treinamento.id }}"
+                                    data-data="{{ registro.data|date:'Y-m-d' }}"
+                                    data-valor="{{ registro.valor_alcançado }}"
+                                    data-duracao="{{ registro.duracao|time:'H:i' }}"
+                                    data-esforco="{{ registro.esforco_percebido }}"
+                                    data-observacoes="{{ registro.observacoes }}">
+                                    <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
+                                </button>
+                                
+                                <!-- Botão Excluir -->
+                                <form method="post" class="d-inline" data-registro-id="{{ registro.id }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="registro_id" value="{{ registro.id }}">
+                                    <input type="hidden" name="delete_registro" value="1">
+                                    <button type="submit" class="btn btn-sm btn-delete"
+                                        onclick="return confirm('Tem certeza que deseja excluir este registro?')">
+                                        <i class="fas fa-trash"></i> <span class="d-none d-md-inline">Excluir</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if registros.has_other_pages %}
+        <div class="pagination mt-4">
+            <!-- Botão Primeira Página -->
+            {% if registros.number > 1 %}
+                <a href="?page=1" class="btn btn-outline-primary">
+                    <i class="fas fa-step-backward"></i> Primeira
+                </a>
+            {% else %}
+                <span class="btn btn-outline-secondary disabled">
+                    <i class="fas fa-step-backward"></i> Primeira
+                </span>
+            {% endif %}
+            
+            <!-- Botão Página Anterior -->
+            {% if registros.has_previous %}
+                <a href="?page={{ registros.previous_page_number }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+            {% else %}
+                <span class="btn btn-outline-secondary disabled">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </span>
+            {% endif %}
+            
+            <span class="page-info">
+                Página {{ registros.number }} de {{ registros.paginator.num_pages }}
+            </span>
+            
+            <!-- Botão Próxima Página -->
+            {% if registros.has_next %}
+                <a href="?page={{ registros.next_page_number }}" class="btn btn-outline-primary">
+                    Próximo <i class="fas fa-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="btn btn-outline-secondary disabled">
+                    Próximo <i class="fas fa-chevron-right"></i>
+                </span>
+            {% endif %}
+            
+            <!-- Botão Última Página -->
+            {% if registros.number < registros.paginator.num_pages %}
+                <a href="?page={{ registros.paginator.num_pages }}" class="btn btn-outline-primary">
+                    Última <i class="fas fa-step-forward"></i>
+                </a>
+            {% else %}
+                <span class="btn btn-outline-secondary disabled">
+                    Última <i class="fas fa-step-forward"></i>
+                </span>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+            <h4>Nenhum registro encontrado</h4>
+            <p class="text-gray-500">Comece registrando seu primeiro treinamento usando o formulário acima.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Resumo Estatístico -->
+    <div class="records-section">
+        <h2 class="section-title">
+            <i class="fas fa-chart-bar"></i>
+            Resumo Estatístico
+        </h2>
+
+        <div class="stats-summary">
+            <div class="stat-item">
+                <div class="stat-value">{{ registros.paginator.count }}</div>
+                <div class="stat-label">Total de Registros</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ registros|length|default:0 }}</div>
+                <div class="stat-label">Registros Atuais</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">
+                    {% if registros %}
+                    {{ media_geral|floatformat:2 }}
+                    {% else %}
+                    0.00
+                    {% endif %}
+                </div>
+                <div class="stat-label">Média Geral</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+    // Função para converter data DD/MM/AAAA para YYYY-MM-DD
+    function converterDataParaISO(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return null;
+        const partes = dataStr.split('/');
+        if (partes.length !== 3) return null;
+        const [dia, mes, ano] = partes;
+        if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
+        
+        // Validação adicional para garantir que são números válidos
+        const diaInt = parseInt(dia, 10);
+        const mesInt = parseInt(mes, 10);
+        const anoInt = parseInt(ano, 10);
+        
+        if (isNaN(diaInt) || isNaN(mesInt) || isNaN(anoInt)) return null;
+        
+        // Verificar se a data está dentro de um intervalo razoável
+        const hoje = new Date();
+        const dataAtual = new Date(anoInt, mesInt - 1, diaInt); // Mês é zero-indexed
+        // Permitir até 30 dias no futuro para agendamentos, consistente com a validação backend
+        const dataMaxima = new Date();
+        dataMaxima.setDate(hoje.getDate() + 30);
+        
+        if (diaInt < 1 || diaInt > 31 || mesInt < 1 || mesInt > 12 || anoInt < 1900 || dataAtual > dataMaxima) return null;
+        
+        return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    }
+    
+    // Função para converter data YYYY-MM-DD para DD/MM/AAAA
+    function converterDataParaBR(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return '';
+        const partes = dataStr.split('-');
+        if (partes.length !== 3) return '';
+        const [ano, mes, dia] = partes;
+        return `${dia}/${mes}/${ano}`;
+    }
+    
+    // Função para formatar a entrada de data DD/MM/AAAA
+    function formatarDataInput(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length >= 3) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        if (value.length >= 6) {
+            value = value.substring(0, 5) + '/' + value.substring(5, 9);
+        }
+        
+        input.value = value;
+    }
+    
+    // Função para formatar a entrada de duração HH:MM
+    function formatarDuracaoInput(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length >= 3) {
+            value = value.substring(0, 2) + ':' + value.substring(2, 4);
+        }
+        
+        input.value = value;
+    }
+    
+    // Função para converter duração HH:MM para formato HH:MM:SS
+    function converterDuracaoParaISO(duracaoStr) {
+        if (!duracaoStr) return null;
+        const partes = duracaoStr.split(':');
+        if (partes.length !== 2) return null;
+        const [hora, minuto] = partes;
+        
+        const horaInt = parseInt(hora, 10);
+        const minutoInt = parseInt(minuto, 10);
+        
+        if (isNaN(horaInt) || isNaN(minutoInt)) return null;
+        
+        if (horaInt < 0 || horaInt > 23 || minutoInt < 0 || minutoInt > 59) return null;
+        
+        return `${hora.padStart(2, '0')}:${minuto.padStart(2, '0')}:00`;
+    }
+    
+    // Função para converter duração HH:MM:SS para HH:MM
+    function converterDuracaoParaDisplay(duracaoStr) {
+        if (!duracaoStr) return '';
+        const partes = duracaoStr.split(':');
+        if (partes.length < 2) return '';
+        const [hora, minuto] = partes;
+        return `${hora}:${minuto}`;
+    }
+    
+    // Adiciona formatação para os campos de data e duração
+    document.addEventListener('DOMContentLoaded', function() {
+        const dataInput = document.getElementById('id_data');
+        const duracaoInput = document.getElementById('id_duracao');
+        
+        if (dataInput) {
+            dataInput.addEventListener('input', function() {
+                formatarDataInput(dataInput);
+            });
+        }
+        
+        if (duracaoInput) {
+            duracaoInput.addEventListener('input', function() {
+                formatarDuracaoInput(duracaoInput);
+            });
+        }
+        
+        // Validação do formulário antes do envio
+        const form = document.getElementById('registro-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (dataInput && dataInput.value) {
+                    // Verifica se a data está no formato DD/MM/AAAA
+                    const dataRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+                    if (!dataRegex.test(dataInput.value)) {
+                        alert('Formato de data inválido. Use DD/MM/AAAA.');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Verifica se a data é válida
+                    const dataISO = converterDataParaISO(dataInput.value);
+                    if (!dataISO) {
+                        alert('Data inválida. Verifique os valores (dia, mês, ano).');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Converter data para o formato ISO para envio
+                    const hiddenDataInput = document.createElement('input');
+                    hiddenDataInput.type = 'hidden';
+                    hiddenDataInput.name = 'data';
+                    hiddenDataInput.value = dataISO;
+                    form.appendChild(hiddenDataInput);
+                    
+                    // Prevenir o envio do campo de texto formatado
+                    dataInput.disabled = true;
+                }
+                
+                if (duracaoInput && duracaoInput.value) {
+                    // Verifica se a duração está no formato HH:MM
+                    const duracaoRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                    if (!duracaoRegex.test(duracaoInput.value)) {
+                        alert('Formato de duração inválido. Use HH:MM (ex: 01:30).');
+                        e.preventDefault();
+                        return false;
+                    }
+                    
+                    // Converter duração para o formato ISO para envio
+                    const duracaoISO = converterDuracaoParaISO(duracaoInput.value);
+                    if (duracaoISO) {
+                        const hiddenDuracaoInput = document.createElement('input');
+                        hiddenDuracaoInput.type = 'hidden';
+                        hiddenDuracaoInput.name = 'duracao';
+                        hiddenDuracaoInput.value = duracaoISO;
+                        form.appendChild(hiddenDuracaoInput);
+                        
+                        // Prevenir o envio do campo de texto formatado
+                        duracaoInput.disabled = true;
+                    }
+                }
+            });
+        }
+    });
+    
+    // Função para preencher o formulário com dados do registro para edição
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const registroId = this.getAttribute('data-registro-id');
+            const treinamentoId = this.getAttribute('data-treinamento-id');
+            const data = this.getAttribute('data-data');
+            const valor = this.getAttribute('data-valor');
+            const duracao = this.getAttribute('data-duracao');
+            const esforco = this.getAttribute('data-esforco');
+            const observacoes = this.getAttribute('data-observacoes');
+
+            // Preencher o formulário
+            document.getElementById('registro-id').value = registroId;
+            document.getElementById('id_treinamento').value = treinamentoId;
+            document.getElementById('id_data').value = converterDataParaBR(data);
+            document.getElementById('id_valor_alcançado').value = valor;
+            document.getElementById('id_duracao').value = converterDuracaoParaDisplay(duracao);
+            document.getElementById('id_esforco_percebido').value = esforco;
+            document.getElementById('id_observacoes').value = observacoes;
+
+            // Atualizar título e texto do botão
+            document.getElementById('form-title').textContent = 'Editar Registro';
+            document.getElementById('submit-btn-text').textContent = 'Atualizar Registro';
+
+            // Mostrar botão de cancelar
+            document.getElementById('cancel-edit').style.display = 'inline-block';
+
+            // Rolar para o formulário
+            document.querySelector('#registro-form').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Função para cancelar edição
+    document.getElementById('cancel-edit').addEventListener('click', function () {
+        // Limpar o formulário
+        document.getElementById('registro-form').reset();
+        document.getElementById('registro-id').value = '';
+
+        // Restaurar título e texto do botão
+        document.getElementById('form-title').textContent = 'Adicionar Novo Registro';
+        document.getElementById('submit-btn-text').textContent = 'Registrar Treinamento';
+
+        // Esconder botão de cancelar
+        this.style.display = 'none';
+        
+        // Reativar campos desabilitados
+        const dataInput = document.getElementById('id_data');
+        const duracaoInput = document.getElementById('id_duracao');
+        if (dataInput) dataInput.disabled = false;
+        if (duracaoInput) duracaoInput.disabled = false;
+    });
+
+    // Confirmação de exclusão
+    document.querySelectorAll('.delete-form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            const registroId = this.getAttribute('data-registro-id');
+            if (!confirm('Tem certeza que deseja excluir este registro?')) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}

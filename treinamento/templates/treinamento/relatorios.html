@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Relatórios - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+.page-header {
+    background: rgba(0, 0, 0, 0);
+    color: white;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.page-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.page-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    min-width: 120px;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+.btn-back i {
+    transition: transform 0.3s ease;
+}
+
+.btn-back:hover i {
+    transform: translateX(-3px);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.report-section {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 1.5rem;
+}
+
+.training-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.training-stats-table th,
+.training-stats-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.training-stats-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.training-stats-table tr:hover {
+    background: #f9fafb;
+}
+
+.progress-bar {
+    background: #f3f4f6;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 200px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    width: 0%;
+    transition: width 1s ease-in-out;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #4b5563;
+    min-width: 45px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #6b7280;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        padding: 2rem 1rem;
+    }
+    
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .report-section {
+        padding: 1.5rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+    }
+    
+    .training-stats-table th,
+    .training-stats-table td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .training-stats-table {
+        font-size: 0.75rem;
+    }
+    
+    .training-stats-table th,
+    .training-stats-table td {
+        padding: 0.25rem;
+    }
+    
+    .progress-bar {
+        max-width: 100px;
+    }
+}
+
+/* High Contrast Mode Fixes for Reports Page */
+.high-contrast .report-section {
+    background-color: #000 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+}
+
+.high-contrast .section-title {
+    color: #ffff00 !important;
+}
+
+.high-contrast .training-stats-table th {
+    background-color: #000 !important;
+    color: #ffff00 !important;
+    border-bottom: 2px solid #fff !important;
+}
+
+.high-contrast .training-stats-table td {
+    border-bottom: 1px solid #444 !important;
+    color: #fff !important;
+}
+
+.high-contrast .training-stats-table tr {
+    background-color: #000 !important;
+}
+
+.high-contrast .training-stats-table tr:hover {
+    background-color: #111 !important;
+}
+
+.high-contrast .training-stats-table tr:nth-child(even) {
+    background-color: #111 !important;
+}
+
+.high-contrast .stat-card {
+    background-color: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+.high-contrast .stat-number {
+    color: #ffff00 !important;
+}
+
+.high-contrast .stat-label {
+    color: #ddd !important;
+}
+
+.high-contrast .progress-bar {
+    background-color: #333 !important;
+    border: 1px solid #fff !important;
+}
+
+.high-contrast .progress-fill {
+    background: #ffff00 !important;
+}
+
+.high-contrast .progress-text {
+    color: #fff !important;
+}
+
+.high-contrast .empty-state {
+    color: #fff !important;
+}
+
+.high-contrast .empty-state-icon {
+    color: #ffff00 !important;
+}
+
+/* High Contrast for Mobile View */
+@media (max-width: 768px) {
+    .high-contrast .training-stats-table th,
+    .high-contrast .training-stats-table td {
+        color: #fff !important;
+        border-bottom: 1px solid #444 !important;
+    }
+    
+    .high-contrast .training-stats-table tr {
+        background-color: #000 !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-chart-bar"></i>
+            Relatórios e Estatísticas
+        </h1>
+        <p class="page-subtitle">Análise detalhada do seu desempenho nos treinamentos</p>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex justify-content-center w-100">
+        <a href="{% url 'home_view' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+    
+    <!-- Estatísticas Gerais -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_registros }}</div>
+            <div class="stat-label">Total de Registros</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats_treinamento|length }}</div>
+            <div class="stat-label">Tipos de Treino</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{% if stats_treinamento %}{{ stats_treinamento.0.media|floatformat:1 }}{% else %}0.0{% endif %}</div>
+            <div class="stat-label">Melhor Média</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ dias_consecutivos }}</div>
+            <div class="stat-label">Dias Consecutivos</div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas por Treinamento -->
+    <div class="report-section">
+        <h2 class="section-title">Desempenho por Tipo de Treinamento</h2>
+        {% if stats_treinamento %}
+            <table class="training-stats-table">
+                <thead>
+                    <tr>
+                        <th>Treinamento</th>
+                        <th>Total</th>
+                        <th>Média</th>
+                        <th>Máximo</th>
+                        <th>Mínimo</th>
+                        <th>Progresso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats_treinamento %}
+                        <tr>
+                            <td><strong>{{ stat.treinamento__nome }}</strong></td>
+                            <td>{{ stat.total }}</td>
+                            <td>{{ stat.media|floatformat:2 }}</td>
+                            <td>{{ stat.maximo|floatformat:2 }}</td>
+                            <td>{{ stat.minimo|floatformat:2 }}</td>
+                            <td>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" 
+                                             data-width="{{ stat.progress_width|default:0 }}"
+                                             data-color="{{ stat.progress_color }}"></div>
+                                    </div>
+                                    <span class="progress-text">{{ stat.progress_width|floatformat:1 }}%</span>
+                                </div>
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4>Nenhum dado disponível</h4>
+                <p>Registre alguns treinamentos para ver suas estatísticas.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Estatísticas Mensais -->
+    <div class="report-section">
+        <h2 class="section-title">Evolução Mensal</h2>
+        {% if stats_mensais %}
+            <table class="training-stats-table">
+                <thead>
+                    <tr>
+                        <th>Mês</th>
+                        <th>Total de Registros</th>
+                        <th>Média de Desempenho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in stats_mensais %}
+                        <tr>
+                            <td><strong>{{ stat.month|date:"m/Y" }}</strong></td>
+                            <td>{{ stat.total }}</td>
+                            <td>{{ stat.media|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h4>Nenhum dado mensal disponível</h4>
+                <p>Continue treinando para ver sua evolução mensal.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set progress bar widths based on data attributes
+    const progressBars = document.querySelectorAll('.progress-fill[data-width]');
+    progressBars.forEach(function(bar) {
+        const width = bar.getAttribute('data-width');
+        const color = bar.getAttribute('data-color');
+        bar.style.width = width + '%';
+        if (color) {
+            bar.style.background = color;
+        }
+    });
+});
+</script>
+{% endblock %}

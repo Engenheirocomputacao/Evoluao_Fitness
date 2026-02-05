@@ -1,0 +1,16 @@
+# Django e servidor ASGI
+Django>=6.0.0,<7.0.0
+daphne>=4.2.0
+
+# Channels para WebSocket
+channels>=4.0.0
+channels-redis>=4.2.0
+
+# MQTT para IoT
+paho-mqtt>=1.6.0
+
+# Manipulação de imagens (avatares)
+Pillow>=10.0.0
+
+# Utilitários
+pytz>=2024.1

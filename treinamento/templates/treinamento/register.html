@@ -1,0 +1,881 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registro - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    .register-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .register-title {
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-register:hover {
+        background: linear-gradient(135deg, #4338ca, #3730a3);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .alert-error {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+    }
+
+    .alert-success {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+    }
+
+    .required {
+        color: #dc2626;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .login-link a {
+        color: #4f46e5;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    /* Estilos para o botão de mostrar/ocultar senha */
+    .password-container {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 1.1rem;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .toggle-password:hover {
+        color: #4f46e5;
+        background-color: #f3f4f6;
+    }
+
+    .form-control.password-field {
+        padding-right: 40px;
+    }
+
+    /* Slider Puzzle CAPTCHA Styles */
+    .captcha-section {
+        margin: 1.5rem 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .puzzle-captcha-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .puzzle-captcha-container.verified {
+        border: 2px solid #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .puzzle-captcha-container.failed {
+        border: 2px solid #ef4444;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-10px);
+        }
+
+        75% {
+            transform: translateX(10px);
+        }
+    }
+
+    .puzzle-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .puzzle-icon {
+        font-size: 20px;
+    }
+
+    .puzzle-canvas-container {
+        position: relative;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f4f6;
+    }
+
+    .puzzle-canvas {
+        width: 100%;
+        height: 200px;
+        display: block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .puzzle-piece {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: left 0.1s ease;
+        cursor: move;
+        user-select: none;
+    }
+
+    .puzzle-piece.correct {
+        background: #10b981;
+        border-color: #059669;
+        color: white;
+    }
+
+    .puzzle-piece.incorrect {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .puzzle-target {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        border: 2px dashed #9ca3af;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .slider-container {
+        margin-top: 15px;
+        padding: 10px 0;
+    }
+
+    .slider-track {
+        position: relative;
+        width: 100%;
+        height: 40px;
+        background: linear-gradient(to right, #e5e7eb, #d1d5db);
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .slider-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: linear-gradient(to right, #3b82f6, #2563eb);
+        width: 0%;
+        transition: width 0.1s ease;
+        border-radius: 20px;
+    }
+
+    .slider-fill.success {
+        background: linear-gradient(to right, #10b981, #059669);
+    }
+
+    .slider-fill.error {
+        background: linear-gradient(to right, #ef4444, #dc2626);
+    }
+
+    .slider-button {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 2px solid #3b82f6;
+        border-radius: 50%;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 10;
+    }
+
+    .slider-button:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .slider-button:active {
+        cursor: grabbing;
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .slider-button.success {
+        background: #10b981;
+        border-color: #059669;
+        color: white;
+    }
+
+    .slider-button.error {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .captcha-status {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        min-height: 20px;
+    }
+
+    .captcha-status.success {
+        color: #10b981;
+    }
+
+    .captcha-status.error {
+        color: #ef4444;
+    }
+
+    .reset-button {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.2s;
+        display: none;
+    }
+
+    .reset-button:hover {
+        background: #4b5563;
+    }
+
+    .reset-button.visible {
+        display: inline-block;
+    }
+
+    @media (max-width: 480px) {
+        .puzzle-canvas {
+            height: 150px;
+        }
+
+        .puzzle-piece,
+        .puzzle-target {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <h1 class="register-title">Criar Nova Conta</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="username" class="form-label">
+                Nome de Usuário <span class="required">*</span>
+            </label>
+            <input type="text" id="username" name="username" class="form-control" required
+                placeholder="Digite um nome de usuário único">
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">
+                Email <span class="required">*</span>
+            </label>
+            <input type="email" id="email" name="email" class="form-control" required placeholder="Digite seu email">
+        </div>
+
+        <div class="form-group">
+            <label for="password1" class="form-label">
+                Senha <span class="required">*</span>
+            </label>
+            <div class="password-container">
+                <input type="password" id="password1" name="password1" class="form-control password-field" required
+                    placeholder="Digite sua senha (mínimo 6 caracteres)">
+                <button type="button" class="toggle-password" onclick="togglePassword('password1')">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password2" class="form-label">
+                Confirmar Senha <span class="required">*</span>
+            </label>
+            <div class="password-container">
+                <input type="password" id="password2" name="password2" class="form-control password-field" required
+                    placeholder="Confirme sua senha">
+                <button type="button" class="toggle-password" onclick="togglePassword('password2')">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="nome_completo" class="form-label">
+                Nome Completo <span class="required">*</span>
+            </label>
+            <input type="text" id="nome_completo" name="nome_completo" class="form-control" required
+                placeholder="Digite seu nome completo">
+        </div>
+
+        <div class="form-group">
+            <label for="data_nascimento" class="form-label">Data de Nascimento (DD/MM/AAAA)</label>
+            <input type="text" id="data_nascimento" name="data_nascimento" class="form-control" placeholder="DD/MM/AAAA"
+                maxlength="10" inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}" title="Formato: DD/MM/AAAA">
+        </div>
+
+        <div class="form-group">
+            <label for="idade" class="form-label">Idade</label>
+            <input type="number" id="idade" name="idade" class="form-control" min="1" max="120" inputmode="numeric"
+                pattern="[0-9]*" placeholder="Ex: 25">
+        </div>
+
+        <div class="form-group">
+            <label for="peso" class="form-label">Peso (kg)</label>
+            <input type="number" id="peso" name="peso" class="form-control" step="0.01" min="0" placeholder="Ex: 70.5">
+        </div>
+
+        <div class="form-group">
+            <label for="sexo" class="form-label">Sexo</label>
+            <select id="sexo" name="sexo" class="form-control">
+                <option value="">Selecione</option>
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+                <option value="outro">Outro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="observacoes" class="form-label">Observações</label>
+            <textarea id="observacoes" name="observacoes" class="form-control" rows="3"
+                placeholder="Restrições alimentares, lesões, etc."></textarea>
+        </div>
+
+        <!-- Slider Puzzle CAPTCHA -->
+        <div class="captcha-section">
+            <div class="puzzle-captcha-container" id="puzzleContainer">
+                <div class="puzzle-header">
+                    <span class="puzzle-icon">🧩</span>
+                    <span>Deslize para completar o quebra-cabeça</span>
+                </div>
+
+                <div class="puzzle-canvas-container">
+                    <div class="puzzle-canvas" id="puzzleCanvas">
+                        <div class="puzzle-target" id="puzzleTarget"></div>
+                        <div class="puzzle-piece" id="puzzlePiece">🔒</div>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-track" id="sliderTrack">
+                        <div class="slider-fill" id="sliderFill"></div>
+                        <div class="slider-button" id="sliderButton">
+                            <span>➤</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="captcha-status" id="captchaStatus"></div>
+                <button type="button" class="reset-button" id="resetButton" onclick="resetPuzzle()">
+                    Tentar novamente
+                </button>
+            </div>
+
+            <input type="hidden" name="captcha_verified" id="captchaVerified" value="false">
+        </div>
+
+        <button type="submit" class="btn-register">Criar Conta</button>
+    </form>
+
+    <div class="login-link">
+        {% if user.is_authenticated and user.is_staff %}
+        <a href="{% url 'home' %}">Voltar à página inicial</a> |
+        {% else %}
+        Já tem uma conta? <a href="{% url 'login' %}">Faça login aqui</a> |
+        {% endif %}
+        <a href="{% url 'home' %}">Ir para o início</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+    // Função para converter data DD/MM/AAAA para YYYY-MM-DD
+    function converterDataParaISO(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return null;
+        const partes = dataStr.split('/');
+        if (partes.length !== 3) return null;
+        const [dia, mes, ano] = partes;
+        if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
+
+        // Validação adicional para garantir que são números válidos
+        const diaInt = parseInt(dia, 10);
+        const mesInt = parseInt(mes, 10);
+        const anoInt = parseInt(ano, 10);
+
+        if (isNaN(diaInt) || isNaN(mesInt) || isNaN(anoInt)) return null;
+
+        if (diaInt < 1 || diaInt > 31 || mesInt < 1 || mesInt > 12 || anoInt < 1900 || anoInt > 2025) return null;
+
+        return `${ano}-${mes}-${dia}`;
+    }
+
+    // Função para converter data YYYY-MM-DD para DD/MM/AAAA
+    function converterDataParaBR(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return '';
+        const partes = dataStr.split('-');
+        if (partes.length !== 3) return '';
+        const [ano, mes, dia] = partes;
+        return `${dia}/${mes}/${ano}`;
+    }
+
+    // Função para calcular idade automaticamente
+    function calcularIdade(dataNascStr) {
+        if (!dataNascStr) return '';
+
+        let dataNasc;
+        if (dataNascStr.includes('/')) {
+            // Formato DD/MM/AAAA
+            const partes = dataNascStr.split('/');
+            if (partes.length !== 3) return '';
+            const [dia, mes, ano] = partes;
+
+            // Validação adicional para garantir que são números válidos
+            const diaInt = parseInt(dia, 10);
+            const mesInt = parseInt(mes, 10);
+            const anoInt = parseInt(ano, 10);
+
+            if (isNaN(diaInt) || isNaN(mesInt) || isNaN(anoInt)) return '';
+
+            if (diaInt < 1 || diaInt > 31 || mesInt < 1 || mesInt > 12 || anoInt < 1900 || anoInt > 2025) return '';
+
+            dataNasc = new Date(`${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`);
+        } else {
+            // Formato YYYY-MM-DD
+            dataNasc = new Date(dataNascStr);
+        }
+
+        if (isNaN(dataNasc.getTime())) return '';
+
+        const hoje = new Date();
+        let idade = hoje.getFullYear() - dataNasc.getFullYear();
+        const m = hoje.getMonth() - dataNasc.getMonth();
+        if (m < 0 || (m === 0 && hoje.getDate() < dataNasc.getDate())) {
+            idade--;
+        }
+        return idade > 0 ? idade : '';
+    }
+
+    // Função para calcular data de nascimento a partir da idade
+    function calcularDataNascimento(idade) {
+        if (!idade) return '';
+        const hoje = new Date();
+        const anoNascimento = hoje.getFullYear() - parseInt(idade);
+        const dataNascimento = new Date(anoNascimento, hoje.getMonth(), hoje.getDate());
+        return converterDataParaBR(dataNascimento.toISOString().split('T')[0]); // Formato DD/MM/AAAA
+    }
+
+    // Função para formatar a entrada de data DD/MM/AAAA
+    function formatarDataInput(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+
+        if (value.length >= 3) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        if (value.length >= 6) {
+            value = value.substring(0, 5) + '/' + value.substring(5, 9);
+        }
+
+        input.value = value;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const dataNascInput = document.getElementById('data_nascimento');
+        const idadeInput = document.getElementById('idade');
+
+        // Adiciona formatação para o campo de data
+        if (dataNascInput) {
+            dataNascInput.addEventListener('input', function () {
+                formatarDataInput(dataNascInput);
+
+                // Atualiza a idade sempre que a data mudar, mesmo que o campo não esteja vazio
+                if (idadeInput) {
+                    idadeInput.value = calcularIdade(dataNascInput.value);
+                }
+            });
+        }
+
+        // Atualiza data de nascimento quando a idade muda (apenas se data não foi preenchida)
+        if (idadeInput) {
+            idadeInput.addEventListener('input', function () {
+                if (dataNascInput && !dataNascInput.value) { // Apenas atualiza se o campo data de nascimento estiver vazio
+                    dataNascInput.value = calcularDataNascimento(idadeInput.value);
+                }
+            });
+        }
+
+        // Validação do formulário antes do envio
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const dataNascInput = document.getElementById('data_nascimento');
+                if (dataNascInput && dataNascInput.value) {
+                    // Verifica se a data está no formato DD/MM/AAAA
+                    const dataRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+                    if (!dataRegex.test(dataNascInput.value)) {
+                        alert('Formato de data inválido. Use DD/MM/AAAA.');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    // Verifica se a data é válida
+                    const dataISO = converterDataParaISO(dataNascInput.value);
+                    if (!dataISO) {
+                        alert('Data inválida. Verifique os valores (dia, mês, ano).');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        }
+    });
+
+    // Função para mostrar/ocultar senha
+    function togglePassword(fieldId) {
+        const passwordField = document.getElementById(fieldId);
+        const toggleButton = passwordField.nextElementSibling;
+        const eyeIcon = toggleButton.querySelector('i');
+
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+    }
+
+    // Puzzle CAPTCHA Logic
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
+    let targetPosition = 0;
+    let isVerified = false;
+    const tolerance = 15; // pixels of tolerance for correct position
+
+    // Get elements
+    const sliderButton = document.getElementById('sliderButton');
+    const sliderTrack = document.getElementById('sliderTrack');
+    const sliderFill = document.getElementById('sliderFill');
+    const puzzlePiece = document.getElementById('puzzlePiece');
+    const puzzleTarget = document.getElementById('puzzleTarget');
+    const captchaStatus = document.getElementById('captchaStatus');
+    const resetButton = document.getElementById('resetButton');
+    const puzzleContainer = document.getElementById('puzzleContainer');
+    const captchaVerified = document.getElementById('captchaVerified');
+    const registerForm = document.querySelector('form');
+
+    // Initialize puzzle on page load
+    function initPuzzle() {
+        // Random target position (between 50% and 80% of canvas width)
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const minPos = canvasWidth * 0.5;
+        const maxPos = canvasWidth * 0.8;
+        targetPosition = Math.random() * (maxPos - minPos) + minPos;
+
+        // Set target position
+        puzzleTarget.style.left = targetPosition + 'px';
+
+        // Reset piece to start
+        puzzlePiece.style.left = '10px';
+
+        // Reset slider
+        sliderButton.style.left = '0px';
+        sliderFill.style.width = '0%';
+
+        // Reset states
+        isVerified = false;
+        captchaVerified.value = 'false';
+        resetButton.classList.remove('visible');
+        captchaStatus.textContent = '';
+        captchaStatus.className = 'captcha-status';
+        puzzleContainer.classList.remove('verified', 'failed');
+        sliderButton.classList.remove('success', 'error');
+        sliderFill.classList.remove('success', 'error');
+        puzzlePiece.classList.remove('correct', 'incorrect');
+        puzzlePiece.textContent = '🔒';
+    }
+
+    // Mouse/Touch event handlers
+    function handleStart(e) {
+        if (isVerified) return;
+
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        sliderButton.style.cursor = 'grabbing';
+    }
+
+    function handleMove(e) {
+        if (!isDragging || isVerified) return;
+
+        e.preventDefault();
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const deltaX = clientX - startX;
+
+        // Calculate the max distance the slider can move
+        const trackWidth = sliderTrack.offsetWidth;
+        const buttonWidth = sliderButton.offsetWidth;
+        const maxDistance = trackWidth - buttonWidth;
+
+        // Constrain movement
+        currentX = Math.max(0, Math.min(deltaX, maxDistance));
+
+        // Update slider button position
+        sliderButton.style.left = currentX + 'px';
+
+        // Update fill width
+        const fillPercentage = (currentX / maxDistance) * 100;
+        sliderFill.style.width = fillPercentage + '%';
+
+        // Update puzzle piece position proportionally
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const piecePosition = (currentX / maxDistance) * (canvasWidth - 60) + 10;
+        puzzlePiece.style.left = piecePosition + 'px';
+    }
+
+    function handleEnd(e) {
+        if (!isDragging || isVerified) return;
+
+        isDragging = false;
+        sliderButton.style.cursor = 'grab';
+
+        // Calculate puzzle piece final position
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const trackWidth = sliderTrack.offsetWidth;
+        const buttonWidth = sliderButton.offsetWidth;
+        const maxDistance = trackWidth - buttonWidth;
+
+        const piecePosition = (currentX / maxDistance) * (canvasWidth - 60) + 10;
+
+        // Check if piece is in correct position (with tolerance)
+        const distance = Math.abs(piecePosition - targetPosition);
+
+        if (distance <= tolerance) {
+            // Success!
+            verifySuccess();
+        } else {
+            // Failed
+            verifyFailed();
+        }
+    }
+
+    function verifySuccess() {
+        isVerified = true;
+        captchaVerified.value = 'true';
+
+        // Update UI
+        puzzleContainer.classList.add('verified');
+        sliderButton.classList.add('success');
+        sliderFill.classList.add('success');
+        puzzlePiece.classList.add('correct');
+        puzzlePiece.textContent = '✓';
+
+        captchaStatus.textContent = '✓ Verificado com sucesso!';
+        captchaStatus.className = 'captcha-status success';
+
+        // Disable slider
+        sliderButton.style.cursor = 'not-allowed';
+    }
+
+    function verifyFailed() {
+        // Update UI
+        puzzleContainer.classList.add('failed');
+        sliderButton.classList.add('error');
+        sliderFill.classList.add('error');
+        puzzlePiece.classList.add('incorrect');
+        puzzlePiece.textContent = '✗';
+
+        captchaStatus.textContent = '✗ Posição incorreta. Tente novamente.';
+        captchaStatus.className = 'captcha-status error';
+        resetButton.classList.add('visible');
+
+        // Disable slider temporarily
+        sliderButton.style.cursor = 'not-allowed';
+    }
+
+    function resetPuzzle() {
+        // Remove failed state
+        puzzleContainer.classList.remove('failed');
+
+        // Wait a bit then reinitialize
+        setTimeout(initPuzzle, 300);
+    }
+
+    // Prevent form submission if CAPTCHA not verified
+    if (registerForm) {
+        registerForm.addEventListener('submit', function (e) {
+            if (!isVerified) {
+                e.preventDefault();
+                captchaStatus.textContent = '⚠ Por favor, complete o CAPTCHA primeiro.';
+                captchaStatus.className = 'captcha-status error';
+                puzzleContainer.classList.add('failed');
+
+                setTimeout(() => {
+                    puzzleContainer.classList.remove('failed');
+                    captchaStatus.textContent = '';
+                }, 2000);
+            }
+        });
+    }
+
+    // Mouse events
+    if (sliderButton) {
+        sliderButton.addEventListener('mousedown', handleStart);
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleEnd);
+
+        // Touch events
+        sliderButton.addEventListener('touchstart', handleStart, { passive: false });
+        document.addEventListener('touchmove', handleMove, { passive: false });
+        document.addEventListener('touchend', handleEnd);
+    }
+
+    // Initialize puzzle when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPuzzle);
+    } else {
+        initPuzzle();
+    }
+</script>
+{% endblock %}

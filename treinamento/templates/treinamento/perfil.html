@@ -1,0 +1,768 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Perfil - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: rgba(0, 0, 0, 0);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        min-width: 120px;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .btn-back i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-back:hover i {
+        transform: translateX(-3px);
+    }
+
+    .profile-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .avatar-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto 1rem;
+        overflow: hidden;
+    }
+    
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .avatar-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .avatar-email {
+        color: #6b7280;
+    }
+    
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .stat-item {
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+    
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        margin-top: 1rem;
+    }
+    
+    .btn-upload {
+        border: 2px dashed #ccc;
+        color: #6b7280;
+        background-color: #f9fafb;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-upload:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background-color: rgba(79, 70, 229, 0.1);
+    }
+    
+    .upload-btn-wrapper input[type=file] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .profile-section {
+            padding: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+        }
+        
+        .avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+        
+        .avatar-name {
+            font-size: 1.25rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-overview {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .btn-save {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+        
+        .avatar-name {
+            font-size: 1.1rem;
+        }
+        
+        .stats-overview {
+            grid-template-columns: 1fr;
+        }
+        
+        .stat-value {
+            font-size: 1.25rem;
+        }
+    }
+    
+    /* High Contrast Mode - Profile Page Specific */
+    .high-contrast .page-header {
+        background: #000000 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .page-title,
+    .high-contrast .page-subtitle {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .profile-section {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .profile-section:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .section-title {
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .avatar {
+        background: #333333 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .avatar-name,
+    .high-contrast .avatar-email {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .btn-upload {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-upload:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    
+    .high-contrast .btn-save {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-save:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .btn-back {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-back:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .stat-item {
+        background: #333333 !important;
+        border: 1px solid #ffff00 !important;
+    }
+    
+    .high-contrast .stat-value,
+    .high-contrast .stat-label {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .form-group label {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .form-control:focus {
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+    }
+    
+    .high-contrast .form-control:disabled {
+        background: #333333 !important;
+        color: #cccccc !important;
+        border-color: #666666 !important;
+    }
+    
+    .high-contrast textarea.form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast select.form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .alert {
+        background: #333333 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .alert-danger {
+        border-color: #ff0000 !important;
+        color: #ff0000 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-user-cog"></i>
+            Meu Perfil
+        </h1>
+        <p class="page-subtitle">Gerencie suas informações pessoais e preferências</p>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex justify-content-center w-100">
+        <a href="{% url 'home_view' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+    
+    <!-- Avatar e Informações Básicas -->
+    <div class="profile-section">
+        <div class="avatar-section">
+            <div class="avatar">
+                {% if individuo.avatar %}
+                    <img src="{{ individuo.avatar.url }}" alt="Avatar">
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="avatar-name">{{ individuo.nome_completo }}</div>
+            <div class="avatar-email">{{ individuo.user.email }}</div>
+            
+            <div class="upload-btn-wrapper">
+                <button type="button" class="btn-upload" onclick="document.getElementById('avatar-upload').click()">
+                    <i class="fas fa-camera"></i> Alterar Foto
+                </button>
+                <input type="file" id="avatar-upload" name="avatar" accept="image/*" style="display: none;" onchange="previewImage(this)">
+            </div>
+        </div>
+        
+        <div class="stats-overview">
+            <div class="stat-item">
+                <div class="stat-value">{{ total_registros }}</div>
+                <div class="stat-label">Total de Registros</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ dias_consecutivos }}</div>
+                <div class="stat-label">Dias Consecutivos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ media_geral|floatformat:1 }}</div>
+                <div class="stat-label">Média Geral</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário de Edição -->
+    <div class="profile-section">
+        <h2 class="section-title">Informações Pessoais</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Mostrar mensagens de erro do formulário -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nome_completo">Nome Completo</label>
+                    <input type="text" name="nome_completo" id="nome_completo" 
+                           class="form-control" value="{{ individuo.nome_completo }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="data_nascimento">Data de Nascimento</label>
+                    <input type="text" name="data_nascimento" id="data_nascimento" 
+                           class="form-control" 
+                           placeholder="DD/MM/AAAA"
+                           maxlength="10"
+                           inputmode="numeric"
+                           pattern="\d{2}/\d{2}/\d{4}"
+                           title="Formato: DD/MM/AAAA"
+                           {% if individuo.data_nascimento %}value="{{ individuo.data_nascimento|date:'d/m/Y' }}"{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label for="idade">Idade</label>
+                    <input type="text" id="idade" class="form-control" value="" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="peso">Peso (kg)</label>
+                    <input type="number" name="peso" id="peso" class="form-control" step="0.01" min="0" placeholder="Ex: 70.5" value="{{ individuo.peso }}">
+                </div>
+                <div class="form-group">
+                    <label for="sexo">Sexo</label>
+                    <select name="sexo" id="sexo" class="form-control">
+                        <option value="" {% if not individuo.sexo %}selected{% endif %}>Selecione</option>
+                        <option value="masculino" {% if individuo.sexo == 'masculino' %}selected{% endif %}>Masculino</option>
+                        <option value="feminino" {% if individuo.sexo == 'feminino' %}selected{% endif %}>Feminino</option>
+                        <option value="outro" {% if individuo.sexo == 'outro' %}selected{% endif %}>Outro</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: 1/-1;">
+                    <label for="observacoes">Observações / Restrições</label>
+                    <textarea name="observacoes" id="observacoes" class="form-control" rows="2" maxlength="500" placeholder="Ex: restrições alimentares, lesões, etc.">{{ individuo.observacoes }}</textarea>
+                </div>
+            </div>
+            
+            <!-- Campo oculto para o avatar -->
+            <input type="hidden" name="avatar" value="{{ individuo.avatar }}">
+            
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i>
+                Salvar Alterações
+            </button>
+        </form>
+    </div>
+    
+    <!-- Informações da Conta -->
+    <div class="profile-section">
+        <h2 class="section-title">Informações da Conta</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nome de Usuário</label>
+                <input type="text" class="form-control" value="{{ individuo.user.username }}" readonly>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" value="{{ individuo.user.email }}" readonly>
+            </div>
+            <div class="form-group">
+                <label>Data de Cadastro</label>
+                <input type="text" class="form-control" value="{{ individuo.user.date_joined|date:'d/m/Y' }}" readonly>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+// Função para calcular idade automaticamente
+function calcularIdade(dataNascStr) {
+    if (!dataNascStr) return '';
+    
+    let dataNasc;
+    if (dataNascStr.includes('/')) {
+        // Formato DD/MM/AAAA
+        const partes = dataNascStr.split('/');
+        if (partes.length !== 3) return '';
+        const [dia, mes, ano] = partes;
+        
+        // Validação adicional para garantir que são números válidos
+        const diaInt = parseInt(dia, 10);
+        const mesInt = parseInt(mes, 10);
+        const anoInt = parseInt(ano, 10);
+        
+        if (isNaN(diaInt) || isNaN(mesInt) || isNaN(anoInt)) return '';
+        
+        if (diaInt < 1 || diaInt > 31 || mesInt < 1 || mesInt > 12 || anoInt < 1900 || anoInt > 2025) return '';
+        
+        dataNasc = new Date(`${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`);
+    } else {
+        // Formato YYYY-MM-DD
+        dataNasc = new Date(dataNascStr);
+    }
+    
+    if (isNaN(dataNasc.getTime())) return '';
+    
+    const hoje = new Date();
+    let idade = hoje.getFullYear() - dataNasc.getFullYear();
+    const m = hoje.getMonth() - dataNasc.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < dataNasc.getDate())) {
+        idade--;
+    }
+    return idade > 0 ? idade : '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const dataNascInput = document.getElementById('data_nascimento');
+    const idadeInput = document.getElementById('idade');
+    
+    // Função para converter data DD/MM/AAAA para YYYY-MM-DD
+    function converterDataParaISO(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return null;
+        const partes = dataStr.split('/');
+        if (partes.length !== 3) return null;
+        const [dia, mes, ano] = partes;
+        if (dia.length !== 2 || mes.length !== 2 || ano.length !== 4) return null;
+        
+        // Validação adicional para garantir que são números válidos
+        const diaInt = parseInt(dia, 10);
+        const mesInt = parseInt(mes, 10);
+        const anoInt = parseInt(ano, 10);
+        
+        if (isNaN(diaInt) || isNaN(mesInt) || isNaN(anoInt)) return null;
+        
+        if (diaInt < 1 || diaInt > 31 || mesInt < 1 || mesInt > 12 || anoInt < 1900 || anoInt > 2025) return null;
+        
+        return `${ano}-${mes}-${dia}`;
+    }
+    
+    // Função para converter data YYYY-MM-DD para DD/MM/AAAA
+    function converterDataParaBR(dataStr) {
+        if (!dataStr || dataStr.length !== 10) return '';
+        const partes = dataStr.split('-');
+        if (partes.length !== 3) return '';
+        const [ano, mes, dia] = partes;
+        return `${dia}/${mes}/${ano}`;
+    }
+    
+    // Função para calcular data de nascimento a partir da idade
+    function calcularDataNascimento(idade) {
+        if (!idade) return '';
+        const hoje = new Date();
+        const anoNascimento = hoje.getFullYear() - parseInt(idade);
+        const dataNascimento = new Date(anoNascimento, hoje.getMonth(), hoje.getDate());
+        return converterDataParaBR(dataNascimento.toISOString().split('T')[0]); // Formato DD/MM/AAAA
+    }
+    
+    // Função para formatar a entrada de data DD/MM/AAAA
+    function formatarDataInput(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length >= 3) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+        }
+        if (value.length >= 6) {
+            value = value.substring(0, 5) + '/' + value.substring(5, 9);
+        }
+        
+        input.value = value;
+    }
+    
+    function atualizarIdade() {
+        idadeInput.value = calcularIdade(dataNascInput.value);
+    }
+    
+    // Adiciona formatação para o campo de data
+    if (dataNascInput) {
+        dataNascInput.addEventListener('input', function() {
+            formatarDataInput(dataNascInput);
+            
+            // Atualiza a idade sempre que a data mudar, mesmo que o campo não esteja vazio
+            atualizarIdade();
+        });
+        
+        // Atualiza a idade inicialmente
+        atualizarIdade();
+    }
+    
+    // Atualiza data de nascimento quando a idade muda (apenas se data não foi preenchida)
+    if (idadeInput) {
+        idadeInput.addEventListener('input', function() {
+            if (dataNascInput && !dataNascInput.value) { // Apenas atualiza se o campo data de nascimento estiver vazio
+                dataNascInput.value = calcularDataNascimento(idadeInput.value);
+                // Atualiza a idade novamente após alterar a data
+                atualizarIdade();
+            }
+        });
+    }
+    
+    // Validação do formulário antes do envio
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (dataNascInput && dataNascInput.value) {
+                // Verifica se a data está no formato DD/MM/AAAA
+                const dataRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+                if (!dataRegex.test(dataNascInput.value)) {
+                    alert('Formato de data inválido. Use DD/MM/AAAA.');
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Verifica se a data é válida
+                const dataISO = converterDataParaISO(dataNascInput.value);
+                if (!dataISO) {
+                    alert('Data inválida. Verifique os valores (dia, mês, ano).');
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    }
+});
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            // Atualiza a visualização da imagem
+            const avatarDiv = document.querySelector('.avatar');
+            avatarDiv.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
+            
+            // Cria um novo FormData e envia o formulário
+            const formData = new FormData();
+            formData.append('avatar', input.files[0]);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            // Mostra um indicador de carregamento
+            const uploadBtn = document.querySelector('.btn-upload');
+            const originalBtnHtml = uploadBtn.innerHTML;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            uploadBtn.disabled = true;
+            
+            // Envia o formulário via AJAX
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Atualiza a visualização com a nova URL da imagem
+                    if (data.avatar_url) {
+                        const avatarDiv = document.querySelector('.avatar');
+                        avatarDiv.innerHTML = `<img src="${data.avatar_url}" alt="Avatar">`;
+                    }
+                    // Mostra mensagem de sucesso
+                    showAlert('success', 'Imagem atualizada com sucesso!');
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showAlert('danger', 'Erro ao atualizar a imagem: ' + error.message);
+                // Restaura a imagem anterior em caso de erro
+                const avatarDiv = document.querySelector('.avatar');
+                avatarDiv.innerHTML = '<i class="fas fa-user"></i>';
+            })
+            .finally(() => {
+                // Restaura o botão
+                uploadBtn.innerHTML = originalBtnHtml;
+                uploadBtn.disabled = false;
+                // Limpa o input para permitir o upload do mesmo arquivo novamente
+                input.value = '';
+            });
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function showAlert(type, message) {
+    // Remove alertas anteriores
+    const existingAlert = document.querySelector('.alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // Cria o novo alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    `;
+    
+    // Adiciona o alerta ao topo do conteúdo
+    const content = document.querySelector('.container');
+    content.insertBefore(alertDiv, content.firstChild);
+    
+    // Remove o alerta após 5 segundos
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+</script>
+{% endblock %}

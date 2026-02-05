@@ -1,0 +1,9 @@
+# Requirements for development environment
+-r requirements.txt
+
+# Development tools
+django-debug-toolbar>=4.1.0
+pytest>=8.3.4
+pytest-django>=4.9.0
+black>=24.3.0
+flake8>=7.1.1

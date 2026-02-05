@@ -1,0 +1,575 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Estilo para o campo de senha com ícone do olho */
+    .password-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .password-container input {
+        padding-right: 2.5rem;
+        width: 100%;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6c757d;
+        font-size: 1.2rem;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        z-index: 10;
+    }
+
+    .toggle-password:hover {
+        color: #000;
+        background-color: #f0f0f0;
+    }
+
+    .toggle-password:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25);
+    }
+
+    /* Slider Puzzle CAPTCHA Styles */
+    .captcha-section {
+        margin: 1.5rem 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .puzzle-captcha-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .puzzle-captcha-container.verified {
+        border: 2px solid #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .puzzle-captcha-container.failed {
+        border: 2px solid #ef4444;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-10px);
+        }
+
+        75% {
+            transform: translateX(10px);
+        }
+    }
+
+    .puzzle-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .puzzle-icon {
+        font-size: 20px;
+    }
+
+    .puzzle-canvas-container {
+        position: relative;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f3f4f6;
+    }
+
+    .puzzle-canvas {
+        width: 100%;
+        height: 200px;
+        display: block;
+        background-image: url('/static/img/captcha/puzzle-bg.png');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .puzzle-piece {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: left 0.1s ease;
+        cursor: move;
+        user-select: none;
+    }
+
+    .puzzle-piece.correct {
+        background: #10b981;
+        border-color: #059669;
+        color: white;
+    }
+
+    .puzzle-piece.incorrect {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .puzzle-target {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        border: 2px dashed #9ca3af;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .slider-container {
+        margin-top: 15px;
+        padding: 10px 0;
+    }
+
+    .slider-track {
+        position: relative;
+        width: 100%;
+        height: 40px;
+        background: linear-gradient(to right, #e5e7eb, #d1d5db);
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .slider-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: linear-gradient(to right, #3b82f6, #2563eb);
+        width: 0%;
+        transition: width 0.1s ease;
+        border-radius: 20px;
+    }
+
+    .slider-fill.success {
+        background: linear-gradient(to right, #10b981, #059669);
+    }
+
+    .slider-fill.error {
+        background: linear-gradient(to right, #ef4444, #dc2626);
+    }
+
+    .slider-button {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        background: white;
+        border: 2px solid #3b82f6;
+        border-radius: 50%;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        z-index: 10;
+    }
+
+    .slider-button:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .slider-button:active {
+        cursor: grabbing;
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    .slider-button.success {
+        background: #10b981;
+        border-color: #059669;
+        color: white;
+    }
+
+    .slider-button.error {
+        background: #ef4444;
+        border-color: #dc2626;
+        color: white;
+    }
+
+    .captcha-status {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 500;
+        min-height: 20px;
+    }
+
+    .captcha-status.success {
+        color: #10b981;
+    }
+
+    .captcha-status.error {
+        color: #ef4444;
+    }
+
+    .reset-button {
+        margin-top: 10px;
+        padding: 8px 16px;
+        background: #6b7280;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.2s;
+        display: none;
+    }
+
+    .reset-button:hover {
+        background: #4b5563;
+    }
+
+    .reset-button.visible {
+        display: inline-block;
+    }
+
+    @media (max-width: 480px) {
+        .puzzle-canvas {
+            height: 150px;
+        }
+
+        .puzzle-piece,
+        .puzzle-target {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-form">
+    <h2>Entrar</h2>
+
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        Seu nome de usuário e senha não coincidem. Por favor, tente novamente.
+    </div>
+    {% endif %}
+
+    {% if next %}
+    {% if user.is_authenticated %}
+    <p>Sua conta não tem acesso a esta página. Para continuar, faça login com uma conta que tenha acesso.</p>
+    {% else %}
+    <p>Por favor, faça login para ver esta página.</p>
+    {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_username">Usuário:</label>
+            <input type="text" name="username" id="id_username" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="id_password">Senha:</label>
+            <div class="password-container">
+                <input type="password" name="password" id="id_password" class="form-control" required>
+                <button type="button" class="toggle-password" onclick="togglePasswordVisibility()"
+                    aria-label="Mostrar senha">
+                    <span id="eye-icon">👁</span>
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Slider Puzzle CAPTCHA -->
+        <div class="captcha-section">
+            <div class="puzzle-captcha-container" id="puzzleContainer">
+                <div class="puzzle-header">
+                    <span class="puzzle-icon">🧩</span>
+                    <span>Deslize para completar o quebra-cabeça</span>
+                </div>
+
+                <div class="puzzle-canvas-container">
+                    <div class="puzzle-canvas" id="puzzleCanvas">
+                        <div class="puzzle-target" id="puzzleTarget"></div>
+                        <div class="puzzle-piece" id="puzzlePiece">🔒</div>
+                    </div>
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-track" id="sliderTrack">
+                        <div class="slider-fill" id="sliderFill"></div>
+                        <div class="slider-button" id="sliderButton">
+                            <span>➤</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="captcha-status" id="captchaStatus"></div>
+                <button type="button" class="reset-button" id="resetButton" onclick="resetPuzzle()">
+                    Tentar novamente
+                </button>
+            </div>
+
+            <input type="hidden" name="captcha_verified" id="captchaVerified" value="false">
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <input type="hidden" name="next" value="{{ next }}">
+        </div>
+    </form>
+
+    <p>Não tem uma conta? <a href="{% url 'register_view' %}">Registre-se aqui</a>.</p>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+    // Puzzle CAPTCHA Logic
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
+    let targetPosition = 0;
+    let isVerified = false;
+    const tolerance = 15; // pixels of tolerance for correct position
+
+    // Get elements
+    const sliderButton = document.getElementById('sliderButton');
+    const sliderTrack = document.getElementById('sliderTrack');
+    const sliderFill = document.getElementById('sliderFill');
+    const puzzlePiece = document.getElementById('puzzlePiece');
+    const puzzleTarget = document.getElementById('puzzleTarget');
+    const captchaStatus = document.getElementById('captchaStatus');
+    const resetButton = document.getElementById('resetButton');
+    const puzzleContainer = document.getElementById('puzzleContainer');
+    const captchaVerified = document.getElementById('captchaVerified');
+    const loginForm = document.querySelector('form');
+
+    // Initialize puzzle on page load
+    function initPuzzle() {
+        // Random target position (between 50% and 80% of canvas width)
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const minPos = canvasWidth * 0.5;
+        const maxPos = canvasWidth * 0.8;
+        targetPosition = Math.random() * (maxPos - minPos) + minPos;
+
+        // Set target position
+        puzzleTarget.style.left = targetPosition + 'px';
+
+        // Reset piece to start
+        puzzlePiece.style.left = '10px';
+
+        // Reset slider
+        sliderButton.style.left = '0px';
+        sliderFill.style.width = '0%';
+
+        // Reset states
+        isVerified = false;
+        captchaVerified.value = 'false';
+        resetButton.classList.remove('visible');
+        captchaStatus.textContent = '';
+        captchaStatus.className = 'captcha-status';
+        puzzleContainer.classList.remove('verified', 'failed');
+        sliderButton.classList.remove('success', 'error');
+        sliderFill.classList.remove('success', 'error');
+        puzzlePiece.classList.remove('correct', 'incorrect');
+        puzzlePiece.textContent = '🔒';
+    }
+
+    // Mouse/Touch event handlers
+    function handleStart(e) {
+        if (isVerified) return;
+
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        sliderButton.style.cursor = 'grabbing';
+    }
+
+    function handleMove(e) {
+        if (!isDragging || isVerified) return;
+
+        e.preventDefault();
+        const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        const deltaX = clientX - startX;
+
+        // Calculate the max distance the slider can move
+        const trackWidth = sliderTrack.offsetWidth;
+        const buttonWidth = sliderButton.offsetWidth;
+        const maxDistance = trackWidth - buttonWidth;
+
+        // Constrain movement
+        currentX = Math.max(0, Math.min(deltaX, maxDistance));
+
+        // Update slider button position
+        sliderButton.style.left = currentX + 'px';
+
+        // Update fill width
+        const fillPercentage = (currentX / maxDistance) * 100;
+        sliderFill.style.width = fillPercentage + '%';
+
+        // Update puzzle piece position proportionally
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const piecePosition = (currentX / maxDistance) * (canvasWidth - 60) + 10;
+        puzzlePiece.style.left = piecePosition + 'px';
+    }
+
+    function handleEnd(e) {
+        if (!isDragging || isVerified) return;
+
+        isDragging = false;
+        sliderButton.style.cursor = 'grab';
+
+        // Calculate puzzle piece final position
+        const canvas = document.getElementById('puzzleCanvas');
+        const canvasWidth = canvas.offsetWidth;
+        const trackWidth = sliderTrack.offsetWidth;
+        const buttonWidth = sliderButton.offsetWidth;
+        const maxDistance = trackWidth - buttonWidth;
+
+        const piecePosition = (currentX / maxDistance) * (canvasWidth - 60) + 10;
+
+        // Check if piece is in correct position (with tolerance)
+        const distance = Math.abs(piecePosition - targetPosition);
+
+        if (distance <= tolerance) {
+            // Success!
+            verifySuccess();
+        } else {
+            // Failed
+            verifyFailed();
+        }
+    }
+
+    function verifySuccess() {
+        isVerified = true;
+        captchaVerified.value = 'true';
+
+        // Update UI
+        puzzleContainer.classList.add('verified');
+        sliderButton.classList.add('success');
+        sliderFill.classList.add('success');
+        puzzlePiece.classList.add('correct');
+        puzzlePiece.textContent = '✓';
+
+        captchaStatus.textContent = '✓ Verificado com sucesso!';
+        captchaStatus.className = 'captcha-status success';
+
+        // Disable slider
+        sliderButton.style.cursor = 'not-allowed';
+    }
+
+    function verifyFailed() {
+        // Update UI
+        puzzleContainer.classList.add('failed');
+        sliderButton.classList.add('error');
+        sliderFill.classList.add('error');
+        puzzlePiece.classList.add('incorrect');
+        puzzlePiece.textContent = '✗';
+
+        captchaStatus.textContent = '✗ Posição incorreta. Tente novamente.';
+        captchaStatus.className = 'captcha-status error';
+        resetButton.classList.add('visible');
+
+        // Disable slider temporarily
+        sliderButton.style.cursor = 'not-allowed';
+    }
+
+    function resetPuzzle() {
+        // Remove failed state
+        puzzleContainer.classList.remove('failed');
+
+        // Wait a bit then reinitialize
+        setTimeout(initPuzzle, 300);
+    }
+
+    // Prevent form submission if CAPTCHA not verified
+    loginForm.addEventListener('submit', function (e) {
+        if (!isVerified) {
+            e.preventDefault();
+            captchaStatus.textContent = '⚠ Por favor, complete o CAPTCHA primeiro.';
+            captchaStatus.className = 'captcha-status error';
+            puzzleContainer.classList.add('failed');
+
+            setTimeout(() => {
+                puzzleContainer.classList.remove('failed');
+                captchaStatus.textContent = '';
+            }, 2000);
+        }
+    });
+
+    // Mouse events
+    sliderButton.addEventListener('mousedown', handleStart);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+
+    // Touch events
+    sliderButton.addEventListener('touchstart', handleStart, { passive: false });
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleEnd);
+
+    // Initialize on page load
+    window.addEventListener('load', initPuzzle);
+
+    // Password visibility toggle
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('id_password');
+        const eyeIcon = document.getElementById('eye-icon');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.textContent = '🚫'; // Ícone para ocultar
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.textContent = '👁'; // Ícone para mostrar
+        }
+    }
+</script>
+{% endblock %}

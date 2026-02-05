@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if editing %}Editar Dispositivo - {{ dispositivo.nome }}{% else %}Adicionar Dispositivo IoT{% endif %} | Evolução Fitness{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-image: url("{% static 'img/hero_bg.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: -1;
+    }
+
+    .create-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-header h1 {
+        color: #1e293b;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-header p {
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #6366f1;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-secondary:hover {
+        background: #475569;
+        transform: translateY(-2px);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .help-text {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    .errorlist {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .errorlist li {
+        list-style: none;
+    }
+
+    @media (max-width: 768px) {
+        .create-container {
+            margin: 1rem auto;
+            padding: 0 0.5rem;
+        }
+        
+        .form-card {
+            padding: 1.5rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="create-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h1>
+                <i class="{% if editing %}fas fa-edit{% else %}fas fa-plus-circle{% endif %} me-2"></i>
+                {% if editing %}Editar Dispositivo{% else %}Adicionar Novo Dispositivo{% endif %}
+            </h1>
+            <p>{% if editing %}Atualize as informações do seu dispositivo IoT{% else %}Preencha as informações do seu dispositivo IoT{% endif %}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h2>
+                
+                <div class="form-group">
+                    <label for="{{ form.device_id.id_for_label }}" class="form-label">
+                        ID do Dispositivo *
+                    </label>
+                    {{ form.device_id }}
+                    {% if form.device_id.help_text %}
+                        <div class="help-text">{{ form.device_id.help_text }}</div>
+                    {% endif %}
+                    {% if form.device_id.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.device_id.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.nome.id_for_label }}" class="form-label">
+                        Nome do Dispositivo *
+                    </label>
+                    {{ form.nome }}
+                    {% if form.nome.help_text %}
+                        <div class="help-text">{{ form.nome.help_text }}</div>
+                    {% endif %}
+                    {% if form.nome.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.nome.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.tipo.id_for_label }}" class="form-label">
+                        Tipo de Dispositivo *
+                    </label>
+                    {{ form.tipo }}
+                    {% if form.tipo.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.tipo.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}" class="form-label">
+                        Status Inicial
+                    </label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.status.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Informações Técnicas -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-microchip me-2"></i>Informações Técnicas</h2>
+                
+                <div class="form-group">
+                    <label for="{{ form.fabricante.id_for_label }}" class="form-label">
+                        Fabricante
+                    </label>
+                    {{ form.fabricante }}
+                    {% if form.fabricante.help_text %}
+                        <div class="help-text">{{ form.fabricante.help_text }}</div>
+                    {% endif %}
+                    {% if form.fabricante.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.fabricante.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.modelo.id_for_label }}" class="form-label">
+                        Modelo
+                    </label>
+                    {{ form.modelo }}
+                    {% if form.modelo.help_text %}
+                        <div class="help-text">{{ form.modelo.help_text }}</div>
+                    {% endif %}
+                    {% if form.modelo.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.modelo.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.firmware_version.id_for_label }}" class="form-label">
+                        Versão do Firmware
+                    </label>
+                    {{ form.firmware_version }}
+                    {% if form.firmware_version.help_text %}
+                        <div class="help-text">{{ form.firmware_version.help_text }}</div>
+                    {% endif %}
+                    {% if form.firmware_version.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.firmware_version.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Rede -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-network-wired me-2"></i>Configurações de Rede</h2>
+                
+                <div class="form-group">
+                    <label for="{{ form.mac_address.id_for_label }}" class="form-label">
+                        Endereço MAC
+                    </label>
+                    {{ form.mac_address }}
+                    {% if form.mac_address.help_text %}
+                        <div class="help-text">{{ form.mac_address.help_text }}</div>
+                    {% endif %}
+                    {% if form.mac_address.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.mac_address.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.ip_address.id_for_label }}" class="form-label">
+                        Endereço IP
+                    </label>
+                    {{ form.ip_address }}
+                    {% if form.ip_address.help_text %}
+                        <div class="help-text">{{ form.ip_address.help_text }}</div>
+                    {% endif %}
+                    {% if form.ip_address.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.ip_address.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Configurações -->
+            <div class="form-section">
+                <h2 class="section-title"><i class="fas fa-cog me-2"></i>Configurações do Dispositivo</h2>
+                
+                <div class="form-group">
+                    <label for="{{ config_form.intervalo_leitura.id_for_label }}" class="form-label">
+                        Intervalo de Leitura (segundos)
+                    </label>
+                    {{ config_form.intervalo_leitura }}
+                    {% if config_form.intervalo_leitura.help_text %}
+                        <div class="help-text">{{ config_form.intervalo_leitura.help_text }}</div>
+                    {% endif %}
+                    {% if config_form.intervalo_leitura.errors %}
+                        <ul class="errorlist">
+                            {% for error in config_form.intervalo_leitura.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ config_form.valor_minimo_alerta.id_for_label }}" class="form-label">
+                        Valor Mínimo para Alerta
+                    </label>
+                    {{ config_form.valor_minimo_alerta }}
+                    {% if config_form.valor_minimo_alerta.help_text %}
+                        <div class="help-text">{{ config_form.valor_minimo_alerta.help_text }}</div>
+                    {% endif %}
+                    {% if config_form.valor_minimo_alerta.errors %}
+                        <ul class="errorlist">
+                            {% for error in config_form.valor_minimo_alerta.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ config_form.valor_maximo_alerta.id_for_label }}" class="form-label">
+                        Valor Máximo para Alerta
+                    </label>
+                    {{ config_form.valor_maximo_alerta }}
+                    {% if config_form.valor_maximo_alerta.help_text %}
+                        <div class="help-text">{{ config_form.valor_maximo_alerta.help_text }}</div>
+                    {% endif %}
+                    {% if config_form.valor_maximo_alerta.errors %}
+                        <ul class="errorlist">
+                            {% for error in config_form.valor_maximo_alerta.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div class="form-check">
+                        {{ config_form.criar_registro_automatico }}
+                        <label for="{{ config_form.criar_registro_automatico.id_for_label }}" class="form-label">
+                            Criar registros de treinamento automaticamente
+                        </label>
+                    </div>
+                    {% if config_form.criar_registro_automatico.errors %}
+                        <ul class="errorlist">
+                            {% for error in config_form.criar_registro_automatico.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ config_form.treinamento_padrao.id_for_label }}" class="form-label">
+                        Tipo de Treinamento Padrão
+                    </label>
+                    {{ config_form.treinamento_padrao }}
+                    {% if config_form.treinamento_padrao.help_text %}
+                        <div class="help-text">{{ config_form.treinamento_padrao.help_text }}</div>
+                    {% endif %}
+                    {% if config_form.treinamento_padrao.errors %}
+                        <ul class="errorlist">
+                            {% for error in config_form.treinamento_padrao.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'iot_dashboard' %}" class="btn-secondary">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </a>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save me-2"></i>{% if editing %}Atualizar Dispositivo{% else %}Salvar Dispositivo{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

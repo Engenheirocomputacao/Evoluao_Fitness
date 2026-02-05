@@ -1,0 +1,3558 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Evolução Fitness{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Verificar se Chart.js foi carregado
+window.addEventListener('load', function() {
+    if (typeof Chart !== 'undefined') {
+        console.log('Chart.js carregado com sucesso - versão:', Chart.version);
+    } else {
+        console.error('Chart.js não foi carregado');
+    }
+});
+</script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.5);
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+        --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        --card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        --bg-color: #f8fafc;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background-image: url("{% static 'img/hero_bg.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        font-family: 'Outfit', sans-serif;
+        color: var(--text-main);
+        min-height: 100vh;
+    }
+
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: -1;
+    }
+
+    .dashboard-container {
+        padding: 0.75rem 0.5rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    @media (min-width: 576px) {
+        .dashboard-container {
+            padding: 1rem 0.75rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .dashboard-container {
+            padding: 1.5rem 1rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .dashboard-container {
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    @media (min-width: 576px) {
+        .dashboard-container {
+            padding: 1.5rem 1rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .dashboard-container {
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    /* Header Styling */
+    .dashboard-header {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .dashboard-header .btn-outline-light {
+        color: white;
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .dashboard-header .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .feature-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.3s ease;
+    }
+
+    .feature-btn:hover::before {
+        left: 100%;
+    }
+
+    .feature-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    @media (min-width: 992px) {
+        .dashboard-header {
+            margin-bottom: 2.5rem;
+        }
+    }
+
+    .welcome-text h1 {
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.5rem;
+        color: white;
+        line-height: 1.2;
+    }
+
+    @media (min-width: 576px) {
+        .welcome-text h1 {
+            font-size: 1.75rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .welcome-text h1 {
+            font-size: 2rem;
+        }
+    }
+
+    .welcome-text p {
+        color: var(--text-muted);
+        margin: 0.25rem 0 0 0;
+        font-size: 0.95rem;
+    }
+
+    @media (min-width: 576px) {
+        .welcome-text p {
+            font-size: 1rem;
+        }
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 576px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+        .kpi-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+    }
+
+    .kpi-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 1.25rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    @media (min-width: 768px) {
+        .kpi-card {
+            padding: 1.5rem;
+            border-radius: 20px;
+            gap: 1.25rem;
+        }
+    }
+
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    @media (min-width: 768px) {
+        .kpi-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            font-size: 1.5rem;
+        }
+    }
+
+    .kpi-info h3 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    @media (min-width: 576px) {
+        .kpi-info h3 {
+            font-size: 1.5rem;
+        }
+    }
+
+    .kpi-info p {
+        margin: 0;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    @media (min-width: 576px) {
+        .kpi-info p {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Chart Layout */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+        .main-grid {
+            gap: 1.5rem;
+        }
+    }
+
+    /* Estilo para a seção de análise avançada */
+    .advanced-analytics {
+        margin-top: 2rem;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .advanced-analytics:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    .advanced-analytics h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: #1e293b;
+        text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 640px) {
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .metrics-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .metric-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    .metric-card h3 {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0 0 0.75rem 0;
+        font-weight: 500;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .metric-change {
+        display: flex;
+        align-items: center;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+
+    .metric-change.positive {
+        color: #10b981;
+    }
+
+    .metric-change.negative {
+        color: #ef4444;
+    }
+
+    .metric-change i {
+        margin-right: 0.25rem;
+    }
+
+    @media (min-width: 992px) {
+        .main-grid {
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Garantir que cards não fiquem muito largos em telas grandes */
+        .chart-card {
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .chart-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .main-grid {
+            grid-template-columns: 1.8fr 1fr;
+            gap: 2.5rem;
+        }
+
+        /* Ajuste para telas muito grandes */
+        .chart-wrapper {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    .chart-card {
+        min-height: 350px;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-sizing: border-box;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    @media (max-width: 767px) {
+        .chart-card {
+            padding: 1rem;
+            margin: 0;
+            width: 100%;
+            min-height: 320px;
+        }
+
+        .chart-box {
+            min-height: 220px;
+            height: 220px;
+        }
+
+        .advanced-analytics h2 {
+            font-size: 1.35rem;
+            margin-bottom: 1.25rem;
+        }
+    }
+
+    .chart-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    @media (min-width: 768px) {
+        .chart-card {
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+    }
+
+    @media (min-width: 576px) {
+        .chart-header {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    .chart-header h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 70%;
+    }
+
+    @media (min-width: 576px) {
+        .chart-header h2 {
+            font-size: 1.25rem;
+            max-width: 100%;
+        }
+    }
+
+    .chart-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .chart-actions .btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    @media (min-width: 576px) {
+        .chart-actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Ranking Table */
+    .ranking-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 24px;
+        padding: 1.75rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .ranking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    /* Estilos para destacar usuário logado no ranking */
+    .usuario-destaque {
+        animation: pulse 2s infinite;
+    }
+
+    .usuario-badge {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+    }
+
+    @keyframes pulse {
+        0% {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        50% {
+            background-color: rgba(79, 70, 229, 0.15);
+        }
+
+        100% {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+    }
+
+    .table-custom tbody tr.usuario-destaque:hover {
+        background-color: rgba(79, 70, 229, 0.2) !important;
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+    }
+
+    /* Estilos para avatar no ranking */
+    .ranking-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e5e7eb;
+        margin-bottom: 4px;
+    }
+
+    .ranking-position {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        /* Garante largura mínima */
+    }
+
+    .ranking-number {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    /* Estilos para placeholder de avatar */
+    .ranking-placeholder {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid #e5e7eb;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    /* Ajustes para telas maiores */
+    @media (min-width: 768px) {
+        .ranking-avatar {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 6px;
+        }
+
+        .ranking-placeholder {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+
+        .ranking-position {
+            min-width: 70px;
+        }
+
+        .ranking-number {
+            font-size: 0.8rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .ranking-avatar {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 8px;
+        }
+
+        .ranking-placeholder {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .ranking-position {
+            min-width: 80px;
+        }
+
+        .ranking-number {
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .table-custom {
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .table-custom table {
+        min-width: 600px;
+        width: 100%;
+    }
+
+    /* Ajuste para telas grandes */
+    @media (min-width: 768px) {
+        .table-custom table {
+            min-width: 650px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .table-custom table {
+            min-width: 700px;
+        }
+    }
+
+    .table-custom th {
+        color: var(--text-muted);
+        font-weight: 500;
+        padding: 0.75rem 0.5rem;
+        text-align: left;
+        border-bottom: 2px solid #f1f5f9;
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        .table-custom th {
+            padding: 1rem;
+        }
+    }
+
+    .table-custom td {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #f8fafc;
+        white-space: nowrap;
+    }
+
+    @media (min-width: 768px) {
+        .table-custom td {
+            padding: 1rem;
+        }
+    }
+
+    .rank-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .rank-1 {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .rank-2 {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .rank-3 {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    /* Filters */
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (min-width: 768px) {
+        .filter-section {
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+    }
+
+    .filter-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (min-width: 576px) {
+        .filter-row {
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    }
+
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 1rem;
+        border-radius: 16px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .filter-bar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.3);
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 200px;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    @media (min-width: 576px) {
+        .filter-actions {
+            flex-direction: row;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0;
+        }
+
+        .filter-group {
+            margin-bottom: 0;
+        }
+    }
+
+    .filter-actions .btn {
+        width: 100%;
+    }
+
+    @media (min-width: 576px) {
+        .filter-actions .btn {
+            width: auto;
+        }
+    }
+
+    .filter-group {
+        flex: 1 1 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    @media (min-width: 576px) {
+        .filter-group {
+            flex: 1 1 calc(50% - 0.5rem);
+            margin-bottom: 0;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .filter-group {
+            flex: 1;
+            min-width: 180px;
+        }
+    }
+
+    select,
+    input {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        outline: none;
+        font-family: inherit;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    @media (min-width: 576px) {
+        .form-label {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+    }
+
+    .form-select,
+    .form-control {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        background-color: #fff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364758b' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+    }
+
+    @media (min-width: 576px) {
+
+        .form-select,
+        .form-control {
+            padding: 0.5rem 1rem;
+            font-size: 0.95rem;
+        }
+    }
+
+    .form-select:focus,
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        outline: none;
+    }
+
+    /* Intensity Details */
+    .intensity-details {
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border-radius: 8px;
+    }
+
+    .intensity-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0.5rem;
+        background: white;
+        border-radius: 6px;
+        border-left: 3px solid #e5e7eb;
+    }
+
+    .intensity-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .intensity-item strong {
+        color: var(--text-main);
+        display: block;
+    }
+
+    .intensity-item small {
+        display: block;
+        margin-top: 0.25rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .intensity-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-top: 5px;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
+    }
+
+    .intensity-list {
+        color: var(--text-muted);
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    /* Period Selector */
+    .period-selector {
+        display: flex;
+        background: #f1f5f9;
+        padding: 0.25rem;
+        border-radius: 8px;
+        gap: 0.25rem;
+    }
+
+    .period-btn {
+        border: none;
+        background: none;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .period-btn.active {
+        background: white;
+        color: var(--text-main);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    @media (max-width: 1024px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 1024px) and (min-width: 768px) {
+        .main-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .chart-box {
+            height: 320px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .advanced-analytics h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .chart-card {
+            padding: 1rem;
+        }
+
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .chart-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .header-actions {
+            width: 100%;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .header-actions .btn-action {
+            flex: 1;
+            justify-content: center;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.5rem;
+        }
+
+        .welcome-text p {
+            font-size: 0.875rem;
+        }
+
+        .kpi-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 1.25rem;
+        }
+
+        .kpi-info h3 {
+            font-size: 1.25rem;
+        }
+
+        .main-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .filter-bar .btn-action,
+        .filter-bar input,
+        .filter-bar select {
+            width: 100%;
+            justify-content: center;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .period-selector {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .period-btn {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .chart-box {
+            height: 280px;
+        }
+
+        .chart-card {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .chart-header h2 {
+            font-size: 1.1rem;
+        }
+
+        .ranking-card {
+            padding: 1rem;
+        }
+
+        .table-custom th,
+        .table-custom td {
+            padding: 0.75rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .rank-badge {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+
+        .intensity-details {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Estilos para a seção de análise avançada (já definidos acima) */
+
+    .advanced-analytics h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+    }
+
+    .advanced-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .weight-performance-container {
+        margin-top: 2rem;
+    }
+
+    .weight-performance-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    @media (min-width: 768px) {
+        .weight-performance-grid {
+            flex-direction: row;
+            align-items: stretch;
+        }
+
+        .weight-performance-grid>.chart-container {
+            flex: 1 1 70%;
+            min-width: 0;
+            /* Permite que o container encolha */
+        }
+
+        .weight-stats {
+            flex: 1 1 30%;
+            min-width: 250px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .weight-performance-grid {
+            flex-direction: row;
+        }
+
+        .weight-performance-grid>.chart-container {
+            flex: 2;
+        }
+
+        .weight-stats {
+            flex: 1;
+            min-width: 250px;
+        }
+    }
+
+    .weight-stats {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+        width: 100%;
+    }
+
+    @media (min-width: 480px) {
+        .weight-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) {
+        .weight-stats {
+            grid-template-columns: 1fr;
+            margin-top: 0;
+            padding-left: 1rem;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .weight-stats {
+            padding-left: 1.5rem;
+            border-left: 1px solid #e5e7eb;
+        }
+    }
+
+    @media (min-width: 480px) and (max-width: 991px) {
+        .weight-stats {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 479px) {
+        .weight-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .weight-performance-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .chart-box {
+            min-height: 300px;
+        }
+    }
+
+    /* Ajustes para os cards de métricas */
+    .metric-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Ajustes para os cards de métricas */
+
+    .metric-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-box {
+        position: relative;
+        width: 100%;
+        min-height: 250px;
+        height: 300px;
+        overflow: hidden;
+        margin: 0 auto;
+        flex: 1;
+    }
+
+    @media (max-width: 767px) {
+        .chart-box {
+            min-height: 240px;
+            height: 240px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chart-box {
+            min-height: 220px;
+            height: 220px;
+        }
+    }
+
+    /* Ajustes para telas grandes */
+
+    @media (min-width: 992px) {
+        .chart-box {
+            height: 350px;
+            max-height: 400px;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .chart-box {
+            height: 380px;
+            max-height: 450px;
+        }
+    }
+
+    /* Ajuste específico para o gráfico de esforço vs desempenho */
+
+    #effortChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ajuste específico para o gráfico de produtividade */
+
+    #productivityChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ajuste específico para o gráfico de desempenho por esporte */
+
+    #sportPerformanceChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ajustes específicos para gráficos que precisam de mais espaço */
+
+    #effortChartContainer .chart-box,
+    #productivityChartContainer .chart-box {
+        height: 280px;
+    }
+
+    @media (max-width: 992px) {
+        .chart-box {
+            height: 250px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .chart-box {
+            height: 220px;
+            min-width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chart-box {
+            height: 200px;
+        }
+    }
+
+    /* Ajustes para gráficos em telas pequenas */
+    .chart-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Ajustes específicos para os cards de categoria e distribuição */
+    @media (min-width: 992px) {
+
+        .chart-container:has(#categoryChart),
+        .chart-container:has(#distributionChart) {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (min-width: 1200px) {
+
+        .chart-container:has(#categoryChart),
+        .chart-container:has(#distributionChart) {
+            max-width: 550px;
+        }
+    }
+
+    .chart-wrapper {
+        width: 100%;
+        height: 100%;
+        flex: 1;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .chart-wrapper {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    }
+
+    /* Ajuste específico para o gráfico de produtividade */
+    #productivityChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ajuste específico para o gráfico de desempenho por esporte */
+    #sportPerformanceChart {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Ajustes específicos para gráficos que precisam de mais espaço */
+    #effortChartContainer .chart-box,
+    #productivityChartContainer .chart-box {
+        height: 280px;
+    }
+
+    /* Ajustes para gráficos de categoria e distribuição em telas grandes */
+    @media (min-width: 992px) {
+
+        #categoryChart .chart-box,
+        #distributionChart .chart-box {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .chart-wrapper:has(#categoryChart),
+        .chart-wrapper:has(#distributionChart) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    @media (min-width: 1200px) {
+
+        #categoryChart .chart-box,
+        #distributionChart .chart-box {
+            max-width: 450px;
+        }
+
+        /* Limitar altura dos gráficos em telas muito grandes */
+        #categoryChart,
+        #distributionChart {
+            max-height: 350px !important;
+        }
+    }
+
+    @media (min-width: 1400px) {
+
+        #categoryChart .chart-box,
+        #distributionChart .chart-box {
+            max-width: 500px;
+        }
+
+        #categoryChart,
+        #distributionChart {
+            max-height: 400px !important;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .chart-box {
+            height: 250px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .chart-box {
+            height: 220px;
+            min-width: 100%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chart-box {
+            height: 200px;
+        }
+    }
+
+    /* Estilo para gráficos em telas pequenas */
+    .chart-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-wrapper {
+        width: 100%;
+        height: 100%;
+        flex: 1;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .chart-container {
+            margin: 0;
+            padding: 0;
+            overflow-x: visible;
+        }
+    }
+
+    /* Garantir que os gráficos não ultrapassem o container */
+    .chartjs-render-monitor {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Estilos específicos para cada card de análise avançada */
+    #effortChartContainer,
+    #productivityChartContainer,
+    #sportPerformanceChartContainer {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    #effortChart,
+    #productivityChart,
+    #sportPerformanceChart {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+    }
+
+    /* Ajustes para o card de Posição no Ranking */
+    #rankingChartContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 280px;
+        padding: 2rem;
+    }
+
+    @media (max-width: 767px) {
+        #rankingChartContainer {
+            min-height: 240px;
+            padding: 1.5rem;
+        }
+
+        #rankingChartContainer #percentilValue {
+            font-size: 2.5rem !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #rankingChartContainer {
+            min-height: 220px;
+            padding: 1rem;
+        }
+
+        #rankingChartContainer #percentilValue {
+            font-size: 2rem !important;
+        }
+    }
+
+    .chart-wrapper {
+        min-width: 100%;
+        width: max-content;
+        position: relative;
+    }
+
+    @media (max-width: 480px) {
+        .chart-box {
+            height: 250px !important;
+            min-width: 300px;
+            /* Largura mínima para garantir que o gráfico seja legível */
+        }
+
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .chart-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .metric-card {
+            padding: 1rem 0.75rem;
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+        }
+
+        .metric-card h3 {
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.75rem;
+        }
+
+        .chart-actions .btn {
+            padding: 0.35rem 0.65rem;
+            font-size: 0.8rem;
+        }
+
+        .dashboard-header {
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .welcome-text h1 {
+            font-size: 1.25rem;
+        }
+
+        .welcome-text p {
+            font-size: 0.8rem;
+        }
+
+        .kpi-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-card {
+            padding: 0.75rem;
+            gap: 0.75rem;
+        }
+
+        .kpi-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        .kpi-info h3 {
+            font-size: 1.1rem;
+        }
+
+        .kpi-info p {
+            font-size: 0.75rem;
+        }
+
+        .header-actions {
+            gap: 0.25rem;
+        }
+
+        .header-actions .btn-action {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .main-grid {
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-bar {
+            gap: 0.4rem;
+        }
+
+        .filter-bar input,
+        .filter-bar select,
+        .filter-bar .btn-action {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .period-selector {
+            gap: 0.25rem;
+            padding: 0.2rem;
+        }
+
+        .period-btn {
+            padding: 0.4rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .chart-box {
+            height: 240px;
+        }
+
+        .chart-card {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 16px;
+        }
+
+        .chart-header {
+            margin-bottom: 1rem;
+        }
+
+        .chart-header h2 {
+            font-size: 1rem;
+        }
+
+        .ranking-card {
+            padding: 0.75rem;
+        }
+
+        .table-custom {
+            margin-top: 0.75rem;
+        }
+
+        .table-custom th,
+        .table-custom td {
+            padding: 0.5rem 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .rank-badge {
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+        }
+
+        .intensity-details {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .intensity-item {
+            margin-bottom: 0.4rem;
+            gap: 0.4rem;
+        }
+
+        .intensity-dot {
+            width: 8px;
+            height: 8px;
+            margin-top: 2px;
+        }
+
+        /* Ajustes específicos para telas pequenas nos cards de ranking e intensidade */
+        @media (max-width: 767px) {
+            .ranking-card {
+                padding: 0.75rem !important;
+                margin-bottom: 1rem;
+            }
+
+            .ranking-card .chart-header {
+                padding: 0.5rem;
+            }
+
+            .ranking-card .chart-header h2 {
+                font-size: 0.9rem !important;
+                line-height: 1.2;
+            }
+
+            .table-custom {
+                font-size: 0.75rem !important;
+                margin-top: 0.5rem;
+            }
+
+            .table-custom th,
+            .table-custom td {
+                padding: 0.4rem 0.3rem !important;
+            }
+
+            .rank-badge {
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 0.65rem !important;
+            }
+
+            .chart-card {
+                padding: 0.75rem !important;
+                margin-bottom: 0.75rem;
+            }
+
+            .chart-card .chart-header {
+                padding: 0.5rem;
+            }
+
+            .chart-card .chart-header h2 {
+                font-size: 0.9rem !important;
+                line-height: 1.2;
+            }
+
+            .intensity-details {
+                margin-top: 0.5rem;
+                font-size: 0.7rem !important;
+            }
+
+            .intensity-item {
+                margin-bottom: 0.3rem;
+                font-size: 0.7rem;
+            }
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-in {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    /* Novos Estilos para Análise Avançada */
+    .advanced-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .metric-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        border: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .metric-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .metric-icon {
+        font-size: 1.75rem;
+        min-width: 40px;
+    }
+
+    .metric-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 1rem 0;
+    }
+
+    .metric-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .insight-box {
+        padding: 1rem;
+        background: linear-gradient(135deg, #fef3c7 0%, #feeace 100%);
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #92400e;
+        margin-top: 1rem;
+    }
+
+    .insight-box strong {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Progress Bar Customizado */
+    .custom-progress {
+        height: 10px;
+        background: #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .custom-progress-bar {
+        height: 100%;
+        background: var(--primary-gradient);
+        transition: width 0.6s ease;
+        border-radius: 6px;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .status-excellent {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-good {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-average {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-poor {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Responsive para Análise Avançada */
+    @media (max-width: 768px) {
+        .advanced-metrics-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+        }
+    }
+
+    /* Estilos do card de feature (importados da home) */
+    .dashboard-header .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: left;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-header .feature-card-content {
+        padding-left: 6rem;
+    }
+
+    .dashboard-header .feature-card::before {
+        display: none;
+    }
+
+    .dashboard-header .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .dashboard-header .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-header .feature-icon.dashboard {
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+    }
+
+    .dashboard-header .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .dashboard-header .feature-description {
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        font-weight: 500;
+    }
+
+    .dashboard-header .feature-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header .feature-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.3s ease;
+    }
+
+    .dashboard-header .feature-btn:hover::before {
+        left: 100%;
+    }
+
+    .dashboard-header .feature-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+
+    /* High Contrast Mode - Dashboard Specific */
+    .high-contrast .dashboard-header .feature-btn {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .dashboard-header .feature-btn:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .high-contrast .kpi-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .kpi-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .kpi-icon {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+
+    .high-contrast .kpi-info h3,
+    .high-contrast .kpi-info p {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .chart-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .chart-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .chart-header h2 {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .ranking-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .ranking-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .table-custom th {
+        background: #333333 !important;
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .table-custom td {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border-bottom: 1px solid #333333 !important;
+    }
+
+    .high-contrast .table-custom tbody tr:hover td {
+        background: #333333 !important;
+        color: #ffffff !important;
+    }
+
+    .high-contrast .rank-badge {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+    }
+
+    .high-contrast .filter-bar {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .filter-bar:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast select,
+    .high-contrast .form-select,
+    .high-contrast .form-control {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast select:focus,
+    .high-contrast .form-select:focus,
+    .high-contrast .form-control:focus {
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .high-contrast .btn-action {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .btn-action:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .high-contrast .intensity-details {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .intensity-item {
+        background: #333333 !important;
+        border-left: 3px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .intensity-item strong,
+    .high-contrast .intensity-item small {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .advanced-analytics {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .advanced-analytics:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .advanced-analytics h2 {
+        color: #ffff00 !important;
+        text-shadow: none !important;
+    }
+
+    .high-contrast .metric-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .metric-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .metric-card h3,
+    .high-contrast .metric-value {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .metric-change {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .metric-change.positive {
+        color: #00ff00 !important;
+    }
+
+    .high-contrast .metric-change.negative {
+        color: #ff0000 !important;
+    }
+
+    /* Canvas charts high contrast */
+    .high-contrast canvas {
+        filter: contrast(1.2) brightness(1.1);
+    }
+
+    /* Ensure text remains readable in high contrast */
+    .high-contrast .text-muted {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .fw-bold {
+        color: #ffffff !important;
+    }
+
+    .high-contrast .small {
+        color: #cccccc !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Card -->
+    <header class="dashboard-header animate-in">
+        <div class="feature-card">
+            <div class="feature-icon dashboard" style="position: absolute; top: 2.5rem; left: 2.5rem; margin: 0;">
+                <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="feature-card-content">
+                <h1 class="feature-title" style="font-size: 2rem; margin-bottom: 0.5rem;">Painel de Evolução</h1>
+                <p class="feature-description" style="margin-bottom: 1.5rem;">Olá, {{ individuo.nome_completo }}! Veja
+                    seu progresso hoje.</p>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{% url 'home' %}" class="feature-btn">
+                        <i class="fas fa-home"></i>
+                        Página Inicial
+                    </a>
+                    <a href="{% url 'iot_dashboard' %}" class="feature-btn"
+                        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <i class="fas fa-microchip"></i>
+                        Gerenciar IoT
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <div class="filter-bar animate-in" style="animation-delay: 0.1s">
+        <div class="filter-group">
+            <i class="fas fa-filter text-muted"></i>
+            <span class="text-muted fw-bold small">FILTRAR POR:</span>
+        </div>
+        <div class="filter-group">
+            <select id="periodFilter">
+                <option value="7">Últimos 7 dias</option>
+                <option value="30" selected>Últimos 30 dias</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="all">Todo período</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select id="trainingTypeFilter">
+                <option value="">Todos os Treinos</option>
+                {% for tipo in tipos_treinamento %}
+                <option value="{{ tipo }}">{{ tipo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button class="btn-action ms-auto" onclick="refreshDashboard()" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+    </div>
+
+    <!-- KPI Summary -->
+    <div class="kpi-grid animate-in" style="animation-delay: 0.2s">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--primary-gradient)">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <div class="kpi-info">
+                <p>Treinos Totais</p>
+                <h3 id="stat_total_registros">{{ meus_registros.count }}</h3>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--secondary-gradient)">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="kpi-info">
+                <p>Média de Desempenho</p>
+                <h3 id="stat_media_geral">{{ media_geral|floatformat:1 }}</h3>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--accent-gradient)">
+                <i class="fas fa-fire"></i>
+            </div>
+            <div class="kpi-info">
+                <p>Dias Consecutivos</p>
+                <h3 id="stat_dias_consecutivos">{{ dias_consecutivos|default:0 }}</h3>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: #10b981">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="kpi-info">
+                <p>Consistência</p>
+                <h3>{{ consistencia_usuario|floatformat:1 }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Charts Section -->
+    <div class="main-grid">
+        <!-- Chart 1: Evolution -->
+        <div class="animate-in" style="animation-delay: 0.3s">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2>Evolução Temporal</h2>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="evolutionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Category Split -->
+        <div class="animate-in" style="animation-delay: 0.4s">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2>Foco de Treinamento</h2>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Grid -->
+    <div class="main-grid">
+        <!-- Ranking Table -->
+        <div class="animate-in" style="animation-delay: 0.5s">
+            <div class="ranking-card h-100">
+                <div class="chart-header">
+                    <h2>Top Atletas do Sistema</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom" id="rankingTable">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Atleta</th>
+                                <th>Média Geral</th>
+                                <th>Especialidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filled inject via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution -->
+        <div class="animate-in" style="animation-delay: 0.6s">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2>Nível de Intensidade</h2>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <div class="chart-box">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="intensity-details" id="intensityDetails">
+                    <!-- Gerado dinamicamente -->
+                </div>
+                <!-- Distribuição cruzada por tipo de treinamento -->
+                <div class="intensity-cross-distribution"
+                    style="margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-main); font-size: 1rem;">Distribuição por Tipo de
+                        Treinamento</h4>
+                    <div id="crossDistributionDetails">
+                        <!-- Gerado dinamicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVA SEÇÃO: ANÁLISE AVANÇADA -->
+    <div class="advanced-analytics">
+        <h2>📊 Análise Avançada de Desempenho</h2>
+
+        <!-- Grid de 4 Cards -->
+        <div class="advanced-grid">
+            <!-- 1. Esforço vs Desempenho -->
+            <div class="animate-in" style="animation-delay: 0.2s">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>⚡ Esforço vs Desempenho</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <div class="chart-box">
+                                <div id="effortChartContainer">
+                                    <canvas id="effortChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.9rem;">
+                        <p style="margin: 0; color: var(--text-muted);"><strong>💡 Insight:</strong> <span
+                                id="effortInsight">Carregando análise...</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Produtividade por Treino -->
+            <div class="animate-in" style="animation-delay: 0.3s">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>⏱️ Produtividade (Resultado/Minuto)</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <div class="chart-box">
+                                <div id="productivityChartContainer">
+                                    <canvas id="productivityChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.9rem;">
+                        <p style="margin: 0; color: var(--text-muted);"><strong>🎯 Melhor ROI:</strong> <span
+                                id="bestROI">Analisando...</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Desempenho por Esporte -->
+            <div class="animate-in" style="animation-delay: 0.4s">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>🏃 Desempenho por Esporte</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <div class="chart-box">
+                                <div id="sportPerformanceChartContainer">
+                                    <canvas id="sportPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="margin-top: 1rem; padding: 1rem; background: #f9fafb; border-radius: 8px; font-size: 0.9rem;">
+                        <p style="margin: 0; color: var(--text-muted);"><strong>🥇 Seu Melhor:</strong> <span
+                                id="bestSport">Detectando...</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Comparação com Peers -->
+            <div class="animate-in" style="animation-delay: 0.5s">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>📈 Posição no Ranking</h3>
+                    </div>
+                    <div id="rankingChartContainer"
+                        style="padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 1.5rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 3.5rem; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"
+                                id="percentilValue">--%</div>
+                            <p style="margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.95rem;">Percentil</p>
+                        </div>
+                        <div
+                            style="width: 100%; background: #e5e7eb; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="percentilBar"
+                                style="height: 100%; background: var(--primary-gradient); width: 0%; transition: width 0.5s ease;">
+                            </div>
+                        </div>
+                        <div
+                            style="width: 100%; text-align: center; padding: 1rem; background: #f9fafb; border-radius: 8px;">
+                            <p style="margin: 0; font-size: 0.9rem;"><strong id="peerStatus">Aguardando
+                                    análise...</strong></p>
+                            <p style="margin: 0.5rem 0 0 0; color: var(--text-muted); font-size: 0.85rem;"
+                                id="peerDetail">Seus dados comparativos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Relação Peso-Desempenho (Full Width) -->
+        <div class="animate-in weight-performance-container">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>⚖️ Relação Peso & Desempenho</h3>
+                </div>
+                <div class="weight-performance-grid">
+                    <div class="chart-container">
+                        <div class="chart-wrapper">
+                            <div class="chart-box">
+                                <div id="weightPerformanceChartContainer">
+                                    <canvas id="weightPerformanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="weight-stats">
+                        <div class="metric-card"
+                            style="padding: 1rem; background: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <div
+                                    style="width: 24px; height: 24px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-weight-scale" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Peso Atual</p>
+                            </div>
+                            <h3 style="margin: 0.5rem 0 0 0; font-size: 1.5rem; color: #10b981;" id="currentWeight">--
+                            </h3>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #6b7280;" id="weightTrend">Sem
+                                dados</p>
+                        </div>
+                        <div class="metric-card"
+                            style="padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <div
+                                    style="width: 24px; height: 24px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-chart-line" style="color: white; font-size: 0.8rem;"></i>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Rendimento</p>
+                            </div>
+                            <h3 style="margin: 0.5rem 0 0 0; font-size: 1.5rem; color: #f59e0b;" id="performanceGain">--
+                            </h3>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #6b7280;" id="performanceStatus">
+                                --</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global chart instances
+    let charts = {};
+
+    // Função para forçar o redimensionamento dos gráficos
+    function resizeCharts() {
+        Object.values(charts).forEach(chart => {
+            if (chart && typeof chart.resize === 'function') {
+                chart.resize();
+            }
+        });
+    }
+
+    // Redimensionar gráficos quando a janela for redimensionada
+    let resizeTimer;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            resizeCharts();
+        }, 250);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshDashboard();
+
+        // Forçar redimensionamento após um pequeno atraso para garantir que tudo esteja carregado
+        setTimeout(() => {
+            resizeCharts();
+        }, 500);
+    });
+
+    async function refreshDashboard() {
+        console.log('Iniciando refreshDashboard...');
+        
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
+        }
+
+        const period = document.getElementById('periodFilter')?.value || '30';
+        const type = document.getElementById('trainingTypeFilter')?.value || '';
+
+        try {
+            console.log('Fazendo requisição para API...');
+            const response = await fetch(`/api/dashboard-data/?period=${period}&training_type=${encodeURIComponent(type)}`, {
+                credentials: 'same-origin'
+            });
+            console.log('Resposta da API recebida:', response.status);
+            
+            const data = await response.json();
+            console.log('Dados da API processados:', Object.keys(data));
+            
+            if (data.error) throw new Error(data.error);
+
+            updateStats(data.stats);
+            updateRanking(data.top_individuos);
+
+            // Render Charts
+            renderEvolutionChart(data.evolucao);
+            renderCategoryChart(data.minhas_medias);
+
+            // Verificar se dados de distribuição existem
+            if (data.distribuicao) {
+                renderDistributionChart(data.distribuicao);
+            } else {
+                console.warn('Dados de distribuição não encontrados:', data);
+            }
+
+            // Novos Gráficos Avançados
+            console.log('Verificando dados para gráficos avançados...');
+            console.log('Esforço por tipo:', data.esforco_por_tipo);
+            console.log('Duração por treino:', data.duracao_por_treino);
+            
+            // Verificar se Chart.js está carregado antes de renderizar
+            const renderChartsWithDelay = () => {
+                console.log('Verificando disponibilidade do Chart.js...');
+                
+                if (typeof Chart === 'undefined') {
+                    console.warn('Chart.js ainda não está disponível, tentando novamente em 200ms...');
+                    setTimeout(renderChartsWithDelay, 200);
+                    return;
+                }
+                
+                console.log('Chart.js disponível, versão:', Chart.version);
+                
+                // Adicionar pequeno delay para garantir que DOM esteja pronto
+                setTimeout(() => {
+                    console.log('Iniciando renderização dos gráficos...');
+                    
+                    if (document.getElementById('effortChart') && data.esforco_por_tipo && data.esforco_por_tipo.length > 0) {
+                        console.log('Renderizando gráfico de Esforço vs Desempenho...');
+                        try {
+                            renderEffortChart(data.esforco_por_tipo);
+                            console.log('✓ Gráfico de Esforço vs Desempenho renderizado com sucesso');
+                        } catch (error) {
+                            console.error('Erro ao renderizar Esforço vs Desempenho:', error);
+                        }
+                    } else if (document.getElementById('effortChart')) {
+                        console.log('Mostrando mensagem de dados insuficientes para Esforço vs Desempenho');
+                        document.getElementById('effortChart').parentElement.innerHTML = `
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Dados de esforço vs. desempenho não disponíveis. Adicione mais treinos com avaliação de esforço.
+                            </div>`;
+                    }
+                    
+                    if (document.getElementById('productivityChart') && data.duracao_por_treino && Object.keys(data.duracao_por_treino).length > 0) {
+                        console.log('Renderizando gráfico de Produtividade...');
+                        try {
+                            renderProductivityChart(data.duracao_por_treino);
+                            console.log('✓ Gráfico de Produtividade renderizado com sucesso');
+                        } catch (error) {
+                            console.error('Erro ao renderizar Produtividade:', error);
+                        }
+                    } else if (document.getElementById('productivityChart')) {
+                        console.log('Mostrando mensagem de dados insuficientes para Produtividade');
+                        document.getElementById('productivityChart').parentElement.innerHTML = `
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Dados de produtividade não disponíveis. Adicione mais treinos com duração registrada.
+                            </div>`;
+                    }
+                }, 150);
+            };
+            
+            renderChartsWithDelay();
+            if (document.getElementById('sportPerformanceChart') && data.esporte_stats && data.esporte_stats.length > 0) {
+                renderSportPerformanceChart(data.esporte_stats);
+            } else if (document.getElementById('sportPerformanceChart')) {
+                document.getElementById('sportPerformanceChart').parentElement.innerHTML = `
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Dados de desempenho por esporte não disponíveis. Adicione mais treinos com diferentes tipos de esporte.
+                    </div>`;
+            }
+            if (document.getElementById('weightPerformanceChart')) {
+                if (data.peso_desempenho) {
+                    renderWeightPerformanceCard(data.peso_desempenho);
+                } else {
+                    document.getElementById('weightPerformanceChart').parentElement.innerHTML = `
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Dados de peso vs. desempenho não disponíveis. Adicione registros de peso para visualizar esta análise.
+                        </div>`;
+                }
+            }
+            if (data.peers_comparison) {
+                renderPeersComparison(data.peers_comparison);
+            }
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            console.log('Response data:', data);
+            // Fallback for visual testing if API fails
+        } finally {
+            refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Atualizar';
+        }
+    }
+
+    function updateStats(stats) {
+        document.getElementById('stat_total_registros').innerText = stats.total_registros;
+        document.getElementById('stat_media_geral').innerText = stats.media_geral.toFixed(1);
+        document.getElementById('stat_dias_consecutivos').innerText = stats.dias_consecutivos;
+    }
+
+    function updateRanking(ranking) {
+        const tbody = document.querySelector('#rankingTable tbody');
+        tbody.innerHTML = '';
+
+        ranking.forEach((player, index) => {
+            const isUsuarioLogado = player.is_usuario_logado || false;
+            const row = document.createElement('tr');
+
+            // Adicionar classe especial se for o usuário logado
+            if (isUsuarioLogado) {
+                row.classList.add('usuario-destaque');
+                row.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
+                row.style.borderLeft = '3px solid #4f46e5';
+            }
+
+            // Adicionar separador se o usuário estiver além do top 10
+            if (index === 10 && isUsuarioLogado) {
+                const separatorRow = document.createElement('tr');
+                separatorRow.innerHTML = '<td colspan="4" class="text-center text-muted py-2">...</td>';
+                tbody.appendChild(separatorRow);
+            }
+
+            // Criar HTML para avatar ou placeholder
+            let avatarHtml = '';
+            if (player.avatar) {
+                avatarHtml = `<img src="${player.avatar}" alt="${player.nome}" class="ranking-avatar">`;
+            } else {
+                avatarHtml = `<div class="ranking-placeholder d-flex align-items-center justify-content-center bg-light text-muted">
+                    <i class="fas fa-user"></i>
+                </div>`;
+            }
+
+            row.innerHTML = `
+                <td>
+                    <div class="ranking-position">
+                        ${avatarHtml}
+                        <div class="rank-badge rank-${Math.min(player.posicao, 3)} ${isUsuarioLogado ? 'usuario-badge' : ''}" style="margin-top: 0;">
+                            ${player.posicao}
+                            ${isUsuarioLogado ? '<i class="fas fa-user ms-1"></i>' : ''}
+                        </div>
+                    </div>
+                </td>
+                <td class="fw-bold ${isUsuarioLogado ? 'text-primary' : ''}">${player.nome}</td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                            <div class="progress-bar ${isUsuarioLogado ? 'bg-primary' : ''}" style="width: ${Math.min(player.media * 10, 100)}%; background: ${isUsuarioLogado ? 'var(--primary-gradient)' : 'var(--primary-gradient)'}"></div>
+                        </div>
+                        <span class="small ${isUsuarioLogado ? 'fw-bold text-primary' : ''}">${player.media.toFixed(1)}</span>
+                    </div>
+                </td>
+                <td class="text-muted small">${player.especialidade || 'Geral'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function renderEvolutionChart(evData) {
+        if (charts.evolution) charts.evolution.destroy();
+
+        const ctx = document.getElementById('evolutionChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
+        gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        charts.evolution = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: evData.labels.reverse(),
+                datasets: [{
+                    label: 'Média',
+                    data: evData.data.reverse(),
+                    borderColor: '#6366f1',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#6366f1',
+                    pointHoverRadius: 6,
+                    fill: true,
+                    backgroundColor: gradient,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 200,
+                        ticks: { stepSize: 20 },
+                        suggestedMax: undefined
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    function renderCategoryChart(catData) {
+        if (charts.category) charts.category.destroy();
+
+        // Verificar se há dados suficientes para o gráfico
+        if (!catData || catData.length === 0) {
+            // Se não houver dados, mostrar mensagem informativa
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const chartContainer = document.getElementById('categoryChart').parentElement;
+
+            chartContainer.innerHTML = `
+                <div class="alert alert-info mb-0 d-flex align-items-center justify-content-center h-100">
+                    <div class="text-center">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p class="mb-0">Nenhum dado disponível para o tipo de treinamento selecionado.</p>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        // Se houver dados, criar o gráfico normalmente
+        charts.category = new Chart(document.getElementById('categoryChart'), {
+            type: 'radar',
+            data: {
+                labels: catData.map(d => d.treinamento),
+                datasets: [{
+                    label: 'Seu Desempenho',
+                    data: catData.map(d => d.media),
+                    backgroundColor: 'rgba(45, 212, 191, 0.2)',
+                    borderColor: '#2dd4bf',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#2dd4bf'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            display: true,
+                            stepSize: 20,
+                            backdropColor: 'rgba(255,255,255,0.1)'
+                        },
+                        pointLabels: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        },
+                        angleLines: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
+                    }
+                },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    }
+
+    function renderDistributionChart(distData) {
+        try {
+            if (charts.dist) charts.dist.destroy();
+
+            const canvasElement = document.getElementById('distributionChart');
+            if (!canvasElement) {
+                console.error('Canvas element distributionChart not found');
+                return;
+            }
+
+            const ctx = canvasElement.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get canvas context');
+                return;
+            }
+
+            // Criar gráfico de doughnut com categorias de desempenho
+            charts.dist = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excelente', 'Bom', 'Regular', 'Precisa Melhorar'],
+                    datasets: [{
+                        data: [distData.excelente.count, distData.bom.count, distData.regular.count, distData.precisa_melhorar.count],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
+            });
+
+            // Update intensity details com subdivisão por tipo de treinamento
+            const intensityDetailsHtml = `
+                <div class="intensity-item">
+                    <div class="intensity-dot" style="background: #10b981;"></div>
+                    <div class="intensity-list">
+                        <strong>Excelente:</strong> ${distData.excelente.count} treinos
+                        <br><small style="color: #6b7280;">Força: ${distData.excelente.treinos['força']}, Resistência: ${distData.excelente.treinos['resistência']}, Velocidade: ${distData.excelente.treinos['velocidade']}, Outros: ${distData.excelente.treinos['outros']}</small>
+                    </div>
+                </div>
+                <div class="intensity-item">
+                    <div class="intensity-dot" style="background: #3b82f6;"></div>
+                    <div class="intensity-list">
+                        <strong>Bom:</strong> ${distData.bom.count} treinos
+                        <br><small style="color: #6b7280;">Força: ${distData.bom.treinos['força']}, Resistência: ${distData.bom.treinos['resistência']}, Velocidade: ${distData.bom.treinos['velocidade']}, Outros: ${distData.bom.treinos['outros']}</small>
+                    </div>
+                </div>
+                <div class="intensity-item">
+                    <div class="intensity-dot" style="background: #f59e0b;"></div>
+                    <div class="intensity-list">
+                        <strong>Regular:</strong> ${distData.regular.count} treinos
+                        <br><small style="color: #6b7280;">Força: ${distData.regular.treinos['força']}, Resistência: ${distData.regular.treinos['resistência']}, Velocidade: ${distData.regular.treinos['velocidade']}, Outros: ${distData.regular.treinos['outros']}</small>
+                    </div>
+                </div>
+                <div class="intensity-item">
+                    <div class="intensity-dot" style="background: #ef4444;"></div>
+                    <div class="intensity-list">
+                        <strong>Precisa Melhorar:</strong> ${distData.precisa_melhorar.count} treinos
+                        <br><small style="color: #6b7280;"><strong>Força: ${distData.precisa_melhorar.treinos['força']}, Resistência: ${distData.precisa_melhorar.treinos['resistência']}, Velocidade: ${distData.precisa_melhorar.treinos['velocidade']}, Outros: ${distData.precisa_melhorar.treinos['outros']}</strong></small>
+                    </div>
+                </div>
+            `;
+            document.getElementById('intensityDetails').innerHTML = intensityDetailsHtml;
+
+            // Update cross distribution details showing performance by training type
+            let crossDistributionHtml = '<div class="row">';
+
+            // Função para adicionar um item se o valor for maior que 0
+            function addItem(valor, corFundo, corTexto, texto) {
+                if (valor > 0) {
+                    return `
+                    <div class="col-md-3 col-6 text-center" style="padding: 0.5rem;">
+                        <div style="background: ${corFundo}; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                            <div style="font-size: 1.25rem; font-weight: 700; color: ${corTexto};">${valor}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">${texto}</div>
+                        </div>
+                    </div>`;
+                }
+                return '';
+            }
+
+            // Categoria Excelente
+            let excelentesHtml = '';
+            excelentesHtml += addItem(distData.excelente.treinos['força'], '#ede9fe', '#7e22ce', 'Força Excelente');
+            excelentesHtml += addItem(distData.excelente.treinos['resistência'], '#f3e8ff', '#a855f7', 'Resistência Excelente');
+            excelentesHtml += addItem(distData.excelente.treinos['velocidade'], '#f0f9ff', '#0ea5e9', 'Velocidade Excelente');
+            excelentesHtml += addItem(distData.excelente.treinos['outros'], '#e0e7ff', '#6366f1', 'Outros Excelente');
+
+            if (excelentesHtml) {
+                crossDistributionHtml += excelentesHtml;
+                crossDistributionHtml += '</div><div class="row">';
+            }
+
+            // Categoria Bom
+            let bonsHtml = '';
+            bonsHtml += addItem(distData.bom.treinos['força'], '#dbeafe', '#2563eb', 'Força Bom');
+            bonsHtml += addItem(distData.bom.treinos['resistência'], '#e0f2fe', '#0284c7', 'Resistência Bom');
+            bonsHtml += addItem(distData.bom.treinos['velocidade'], '#e0f7fa', '#0d9488', 'Velocidade Bom');
+            bonsHtml += addItem(distData.bom.treinos['outros'], '#e0e7ff', '#4f46e5', 'Outros Bom');
+
+            if (bonsHtml) {
+                crossDistributionHtml += bonsHtml;
+                crossDistributionHtml += '</div><div class="row">';
+            }
+
+            // Categoria Regular
+            let regularsHtml = '';
+            regularsHtml += addItem(distData.regular.treinos['força'], '#fffbeb', '#d97706', 'Força Regular');
+            regularsHtml += addItem(distData.regular.treinos['resistência'], '#fef3c7', '#f59e0b', 'Resistência Regular');
+            regularsHtml += addItem(distData.regular.treinos['velocidade'], '#e7f5ff', '#3b82f6', 'Velocidade Regular');
+            regularsHtml += addItem(distData.regular.treinos['outros'], '#e0e7ff', '#6366f1', 'Outros Regular');
+
+            if (regularsHtml) {
+                crossDistributionHtml += regularsHtml;
+                crossDistributionHtml += '</div><div class="row">';
+            }
+
+            // Categoria Precisa Melhorar
+            let precisaMelhorarHtml = '';
+            precisaMelhorarHtml += addItem(distData.precisa_melhorar.treinos['força'], '#fee2e2', '#dc2626', 'Força Precisa Melhorar');
+            precisaMelhorarHtml += addItem(distData.precisa_melhorar.treinos['resistência'], '#fecaca', '#ef4444', 'Resistência Precisa Melhorar');
+            precisaMelhorarHtml += addItem(distData.precisa_melhorar.treinos['velocidade'], '#fed7d7', '#f87171', 'Velocidade Precisa Melhorar');
+            precisaMelhorarHtml += addItem(distData.precisa_melhorar.treinos['outros'], '#e0e7ff', '#4f46e5', 'Outros Precisa Melhorar');
+
+            if (precisaMelhorarHtml) {
+                crossDistributionHtml += precisaMelhorarHtml;
+            }
+
+            // Fechar a última linha se houver conteúdo
+            crossDistributionHtml += '</div>';
+
+            // Se não houver nenhum item com valor > 0, mostrar mensagem
+            if (crossDistributionHtml === '<div class="row"></div>') {
+                crossDistributionHtml = '<p style="text-align: center; color: #6b7280; margin: 0;">Nenhum dado disponível para esta categoria</p>';
+            }
+
+            document.getElementById('crossDistributionDetails').innerHTML = crossDistributionHtml;
+        } catch (error) {
+            console.error('Error rendering distribution chart:', error);
+            console.error('Distribution data:', distData);
+        }
+    }
+
+    // ===== NOVOS GRÁFICOS AVANÇADOS =====
+
+    function renderEffortChart(effortData) {
+        console.log('Função renderEffortChart chamada com dados:', effortData);
+        if (charts.effort) charts.effort.destroy();
+
+        const container = document.getElementById('effortChartContainer');
+        console.log('Container encontrado:', container);
+        const canvas = document.createElement('canvas');
+        container.innerHTML = '';
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        console.log('Contexto 2D obtido:', ctx);
+
+        // Separar os dados por tipo de treinamento
+        const forcaData = effortData.filter(d => d.tipo === 'força');
+        const resistenciaData = effortData.filter(d => d.tipo === 'resistência');
+        const velocidadeData = effortData.filter(d => d.tipo === 'velocidade');
+
+        // Obter nomes dos treinos para cada tipo
+        const forcaLabels = forcaData.map(d => d.treino);
+        const resistenciaLabels = resistenciaData.map(d => d.treino);
+        const velocidadeLabels = velocidadeData.map(d => d.treino);
+
+        // Combinar todos os rótulos para o eixo X
+        const allLabels = [...new Set([...forcaLabels, ...resistenciaLabels, ...velocidadeLabels])];
+
+        // Função para criar array de valores com base nos rótulos
+        const createValuesArray = (data, labels) => {
+            return labels.map(label => {
+                const item = data.find(d => d.treino === label);
+                return item ? item.esforco : null;
+            });
+        };
+
+        const forcaEsforco = createValuesArray(forcaData, allLabels);
+        const resistenciaEsforco = createValuesArray(resistenciaData, allLabels);
+        const velocidadeEsforco = createValuesArray(velocidadeData, allLabels);
+
+        charts.effort = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: allLabels,
+                datasets: [
+                    {
+                        label: 'Força - Esforço',
+                        data: forcaEsforco,
+                        borderColor: '#ef4444', // vermelho
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#ef4444',
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Resistência - Esforço',
+                        data: resistenciaEsforco,
+                        borderColor: '#3b82f6', // azul
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#3b82f6',
+                        fill: false,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Velocidade - Esforço',
+                        data: velocidadeEsforco,
+                        borderColor: '#f59e0b', // amarelo
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#f59e0b',
+                        fill: false,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { size: 11 },
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                if (context.parsed.y !== null) {
+                                    return label + ': ' + context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Treinos' },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        title: { display: true, text: 'Esforço Percebido (1-10)' },
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+
+        // Insight: Treino mais eficiente
+        if (effortData.length > 0) {
+            const sortedByEfficiency = [...effortData].sort((a, b) => (b.desempenho / b.esforco) - (a.desempenho / a.esforco));
+            const best = sortedByEfficiency[0];
+            document.getElementById('effortInsight').innerHTML = `${best.treino} é seu treino mais eficiente! Desempenho ${best.desempenho} com esforço ${best.esforco}`;
+        }
+    }
+
+    function renderProductivityChart(durationData) {
+        console.log('Função renderProductivityChart chamada com dados:', durationData);
+        if (charts.productivity) charts.productivity.destroy();
+
+        const container = document.getElementById('productivityChartContainer');
+        console.log('Container de produtividade encontrado:', container);
+        const canvas = document.createElement('canvas');
+        container.innerHTML = '';
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        console.log('Contexto 2D de produtividade obtido:', ctx);
+
+        const treinos = Object.keys(durationData);
+        const produtividades = treinos.map(t => durationData[t].produtividade || 0);
+        const cores = ['#6366f1', '#3b82f6', '#2dd4bf', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+        charts.productivity = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: treinos,
+                datasets: [{
+                    label: 'Resultado por Minuto',
+                    data: produtividades,
+                    backgroundColor: cores.slice(0, treinos.length),
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Pontos de Desempenho / Minuto' },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Melhor ROI
+        const bestROI = treinos.reduce((best, t, i) => produtividades[i] > produtividades[best] ? i : best, 0);
+        document.getElementById('bestROI').innerHTML = `${treinos[bestROI]}: ${produtividades[bestROI].toFixed(3)} pontos/min`;
+    }
+
+    function renderSportPerformanceChart(sportData) {
+        if (charts.sportPerformance) charts.sportPerformance.destroy();
+
+        const container = document.getElementById('sportPerformanceChartContainer');
+        const canvas = document.createElement('canvas');
+        container.innerHTML = '';
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        const labels = sportData.map(s => s.nome);
+        const medias = sportData.map(s => s.media);
+        const cores = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+
+        charts.sportPerformance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Média de Desempenho',
+                    data: medias,
+                    backgroundColor: cores.slice(0, labels.length),
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: Math.max(10, Math.max(...medias) * 1.2),
+                        title: { display: true, text: 'Desempenho' }
+                    }
+                }
+            }
+        });
+
+        // Melhor esporte
+        const best = sportData.reduce((best, s) => s.media > best.media ? s : best);
+        document.getElementById('bestSport').innerHTML = `${best.nome}: ${best.media.toFixed(1)} ⭐`;
+    }
+
+    function renderWeightPerformanceCard(weightData) {
+        if (charts.weightPerformance) charts.weightPerformance.destroy();
+
+        const container = document.getElementById('weightPerformanceChartContainer');
+        if (!container) {
+            console.error('Elemento weightPerformanceChartContainer não encontrado');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        container.innerHTML = '';
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        if (!weightData) {
+            container.innerHTML = `
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Dados de peso e desempenho não disponíveis. Adicione registros de peso no seu perfil.
+                </div>`;
+
+            const currentWeightEl = document.getElementById('currentWeight');
+            const performanceGainEl = document.getElementById('performanceGain');
+            const performanceStatusEl = document.getElementById('performanceStatus');
+            const weightTrendEl = document.getElementById('weightTrend');
+
+            if (currentWeightEl) currentWeightEl.innerHTML = '--';
+            if (performanceGainEl) performanceGainEl.innerHTML = '--';
+            if (performanceStatusEl) performanceStatusEl.innerHTML = 'Sem dados';
+            if (weightTrendEl) weightTrendEl.innerHTML = 'Adicione seu peso no perfil';
+
+            return;
+        }
+
+        // Atualiza os cards de métricas
+        const currentWeightEl = document.getElementById('currentWeight');
+        const performanceGainEl = document.getElementById('performanceGain');
+        const performanceStatusEl = document.getElementById('performanceStatus');
+        const weightTrendEl = document.getElementById('weightTrend');
+
+        if (currentWeightEl) {
+            currentWeightEl.innerHTML = `${weightData.peso_atual} kg`;
+        }
+
+        // Verifica se há histórico de desempenho antes de calcular a melhora
+        if (weightData.historico && weightData.historico.length > 0) {
+            const melhora = weightData.melhora_desempenho || 0;
+            if (performanceGainEl) {
+                performanceGainEl.innerHTML = `${melhora > 0 ? '+' : ''}${melhora.toFixed(2)}`;
+            }
+
+            if (performanceStatusEl) {
+                const status = melhora > 0 ? '✅ Melhorando' : melhora < 0 ? '⚠️ Revisar' : '➖ Estável';
+                performanceStatusEl.innerHTML = status;
+            }
+
+            if (weightTrendEl) {
+                // Pega o primeiro e último registro para mostrar a variação
+                const primeiroPeso = weightData.historico[0]?.peso || weightData.peso_atual;
+                const ultimoPeso = weightData.peso_atual;
+                const variacao = ((ultimoPeso - primeiroPeso) / primeiroPeso * 100).toFixed(1);
+                const trendText = primeiroPeso !== ultimoPeso ?
+                    `Variação: ${variacao}%` :
+                    'Sem histórico suficiente';
+
+                weightTrendEl.innerHTML = trendText;
+            }
+        } else {
+            // Caso não haja histórico de desempenho, mas o peso atual exista
+            if (performanceGainEl) {
+                performanceGainEl.innerHTML = '--';
+            }
+
+            if (performanceStatusEl) {
+                performanceStatusEl.innerHTML = 'Sem histórico';
+            }
+
+            if (weightTrendEl) {
+                weightTrendEl.innerHTML = 'Adicione registros para análise';
+            }
+        }
+
+        if (weightData.historico && weightData.historico.length > 0) {
+            // Prepara os dados para o gráfico
+            const labels = weightData.historico.map(item => {
+                const date = new Date(item.data);
+                return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+            });
+
+            const pesos = weightData.historico.map(item => item.peso);
+            const desempenhos = weightData.historico.map(item => item.desempenho_medio || 0);
+
+            // Cria o gráfico de linha dupla
+            charts.weightPerformance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Peso (kg)',
+                            data: pesos,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Desempenho (0-10)',
+                            data: desempenhos,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            borderDash: [5, 5],
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.datasetIndex === 0) {
+                                            label += context.parsed.y.toFixed(1) + ' kg';
+                                        } else {
+                                            label += context.parsed.y.toFixed(1) + ' pts';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Peso (kg)'
+                            },
+                            min: Math.max(0, Math.min(...pesos) - 5),
+                            max: Math.max(...pesos) + 5
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Desempenho (0-10)'
+                            },
+                            min: 0,
+                            max: 10,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Exibe mensagem quando não há histórico suficiente para o gráfico
+            container.innerHTML = `
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Dados históricos insuficientes para exibir o gráfico. O peso atual é ${weightData.peso_atual} kg.
+                </div>`;
+        }
+    }
+
+    function renderPeersComparison(peersData) {
+        // Verificar se os elementos existem antes de tentar atualizá-los
+        const percentilValueEl = document.getElementById('percentilValue');
+        const percentilBarEl = document.getElementById('percentilBar');
+        const peerStatusEl = document.getElementById('peerStatus');
+        const peerDetailEl = document.getElementById('peerDetail');
+
+        if (!percentilValueEl) {
+            console.error('Elemento percentilValue não encontrado');
+            return;
+        }
+
+        if (!peersData.percentil_estimado) {
+            percentilValueEl.innerHTML = '--';
+            return;
+        }
+
+        const percentil = peersData.percentil_estimado;
+        percentilValueEl.innerHTML = `${percentil}%`;
+
+        if (percentilBarEl) {
+            percentilBarEl.style.width = `${percentil}%`;
+
+            const statusColor =
+                percentil >= 75 ? '#10b981' :
+                    percentil >= 50 ? '#3b82f6' :
+                        percentil >= 25 ? '#f59e0b' : '#ef4444';
+            percentilBarEl.style.background = statusColor;
+        }
+
+        if (peerStatusEl) {
+            peerStatusEl.innerHTML = `Status: ${peersData.status_comparativo}`;
+        }
+        if (peerDetailEl) {
+            peerDetailEl.innerHTML = `Sua média: ${peersData.sua_media.toFixed(1)} | ${peersData.total_treinos} treinos realizados`;
+        }
+    }
+</script>
+{% endblock %}

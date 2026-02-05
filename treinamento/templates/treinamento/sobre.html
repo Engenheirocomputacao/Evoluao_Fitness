@@ -1,0 +1,2126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sobre - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    .about-header {
+        background: transparent;
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(255,255,255,0.1)" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+        background-size: cover;
+        opacity: 0.3;
+    }
+
+    .about-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    .about-subtitle {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        max-width: 800px;
+        margin: 0 auto 2rem;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+    }
+
+    .about-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .about-section {
+        margin-bottom: 4rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #eceff3;
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+        padding-bottom: 1rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(135deg, #bcbbd3, #e1e0ee);
+        border-radius: 2px;
+    }
+
+    .about-content {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .about-text {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+        text-align: justify;
+    }
+
+    .highlight-box {
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border-left: 4px solid #4f46e5;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin: 2rem 0;
+    }
+
+    .highlight-box strong {
+        color: #4f46e5;
+        font-size: 1.1rem;
+    }
+
+    /* Stats Section */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #b2b0c9, #85967f);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* Benefits Section */
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .benefit-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        border-top: 4px solid #4f46e5;
+    }
+
+    .benefit-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .benefit-icon {
+        font-size: 2.5rem;
+        color: #4f46e5;
+        margin-bottom: 1rem;
+    }
+
+    .benefit-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .benefit-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .feature-card {
+        background: #f9fafb;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border-left: 4px solid #4f46e5;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        color: #4f46e5;
+        margin-bottom: 1rem;
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* How It Works */
+    .steps-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+
+    .step-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+    }
+
+    .step-number {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+    }
+
+    .step-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 2rem 0 1rem;
+    }
+
+    .step-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Timeline */
+    .timeline {
+        position: relative;
+        padding: 2rem 0;
+        margin: 2rem 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, #4f46e5, #4338ca);
+        transform: translateX(-50%);
+    }
+
+    .timeline-item {
+        display: flex;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .timeline-item:nth-child(odd) {
+        flex-direction: row;
+    }
+
+    .timeline-item:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+
+    .timeline-content {
+        background: white;
+        padding: 2rem;
+        padding-top: 3.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        width: calc(50% - 40px);
+        position: relative;
+        margin-top: 1rem;
+    }
+
+    .timeline-date {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #9fca96, #ce7a65);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        white-space: nowrap;
+        z-index: 10;
+    }
+
+    .timeline-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-description {
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Architecture */
+    .architecture-diagram {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin: 2rem 0;
+    }
+
+    .architecture-layers {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .architecture-layer {
+        background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+        border-left: 4px solid #4f46e5;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .layer-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .layer-description {
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+
+    .layer-tech {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .tech-badge {
+        background: #4f46e5;
+        color: white;
+        padding: 0.3rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    /* FAQ */
+    .faq-container {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .faq-item {
+        background: white;
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .faq-question {
+        padding: 1.5rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #1f2937;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.3s ease;
+    }
+
+    .faq-question:hover {
+        background: #f9fafb;
+    }
+
+    .faq-question i {
+        color: #4f46e5;
+        transition: transform 0.3s ease;
+    }
+
+    .faq-answer {
+        padding: 0 1.5rem 1.5rem;
+        color: #6b7280;
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+
+    /* Team */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+
+    .team-member {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .team-member:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .team-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4f46e5, #4338ca);
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        overflow: hidden;
+    }
+
+    .team-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .team-name {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .team-role {
+        color: #4f46e5;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+
+    .team-bio {
+        color: #6b7280;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* Target Audience */
+    .target-audience {
+        background: linear-gradient(135deg, #64748b, #475569);
+        color: white;
+        padding: 3rem;
+        border-radius: 1rem;
+        margin: 2rem 0;
+    }
+
+    .target-title {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .audience-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .audience-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        backdrop-filter: blur(10px);
+    }
+
+    .audience-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .audience-text {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    /* Tech Stack */
+    .tech-stack {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin: 2rem 0;
+    }
+
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .tech-item {
+        text-align: center;
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .tech-item:hover {
+        transform: scale(1.05);
+    }
+
+    .tech-icon {
+        font-size: 2.5rem;
+        color: #4f46e5;
+        margin-bottom: 1rem;
+    }
+
+    .tech-name {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+
+    .tech-desc {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    /* Contact */
+    .contact-info {
+        background: white;
+        border-radius: 1rem;
+        padding: 3rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin: 2rem 0;
+    }
+
+    .contact-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+
+    .contact-item {
+        padding: 1rem;
+    }
+
+    .contact-icon {
+        font-size: 2rem;
+        color: #4f46e5;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-text {
+        color: #6b7280;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: transparent;
+        color: white;
+        padding: 4rem 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        margin: 3rem 0;
+        box-shadow: 0 15px 40px rgba(79, 70, 229, 0.3);
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+    }
+
+    .cta-description {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .cta-button {
+        padding: 1rem 2.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+    }
+
+    .cta-button-primary {
+        background: white;
+        color: #4f46e5;
+    }
+
+    .cta-button-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+    }
+
+    .cta-button-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+    }
+
+    .cta-button-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 768px) {
+        .about-title {
+            font-size: 2.5rem;
+        }
+
+        .about-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .about-content {
+            padding: 2rem;
+        }
+
+        .about-text {
+            font-size: 1.1rem;
+        }
+
+        .timeline::before {
+            left: 20px;
+        }
+
+        .timeline-item {
+            flex-direction: column !important;
+            padding-left: 50px;
+        }
+
+        .timeline-content {
+            width: 100%;
+        }
+
+        .timeline-date {
+            left: 20px;
+            top: 0;
+            transform: translateX(0);
+            z-index: 10;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+        }
+
+        .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cta-button {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .about-header {
+            padding: 2rem 0;
+        }
+
+        .about-title {
+            font-size: 2rem;
+        }
+
+        .about-content {
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+    }
+
+    /* High Contrast Mode - About Page Specific */
+    .high-contrast .about-header {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .about-title,
+    .high-contrast .about-subtitle {
+        color: #ffff00 !important;
+        text-shadow: none !important;
+    }
+
+    .high-contrast .section-title {
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .section-title::after {
+        background: #ffff00 !important;
+    }
+
+    .high-contrast .about-content {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .about-content:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .about-text {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .about-text strong {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+
+    .high-contrast .highlight-box {
+        background: #333333 !important;
+        border-left: 4px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .highlight-box strong {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .stat-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .stat-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+        transform: translateY(-5px);
+    }
+
+    .high-contrast .stat-number,
+    .high-contrast .stat-label {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .benefit-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+        border-top: 4px solid #ffff00 !important;
+    }
+
+    .high-contrast .benefit-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+        transform: translateY(-5px);
+    }
+
+    .high-contrast .benefit-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .benefit-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .benefit-description {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .feature-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+        border-left: 4px solid #ffff00 !important;
+    }
+
+    .high-contrast .feature-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .feature-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .feature-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .feature-description {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .step-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .step-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .step-number {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .step-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .step-description {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .team-member {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .team-member:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .member-name {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .member-role {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .contact-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-info {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .cta-button {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .cta-button:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .high-contrast .cta-button-primary {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .cta-button-primary:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    /* Ensure text remains readable in high contrast */
+    .high-contrast p,
+    .high-contrast li,
+    .high-contrast div {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast a {
+        color: #ffff00 !important;
+        text-decoration: underline !important;
+    }
+
+    .high-contrast a:hover {
+        color: #ffffff !important;
+    }
+
+    .high-contrast h1,
+    .high-contrast h2,
+    .high-contrast h3,
+    .high-contrast h4,
+    .high-contrast h5,
+    .high-contrast h6 {
+        color: #ffff00 !important;
+    }
+
+    /* High Contrast Improvements for Specific Sections */
+
+    /* Timeline Section */
+    .high-contrast .timeline::before {
+        background: #ffff00 !important;
+    }
+
+    .high-contrast .timeline-content {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .timeline-content:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .timeline-date {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .timeline-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .timeline-description {
+        color: #cccccc !important;
+    }
+
+    /* Architecture Section */
+    .high-contrast .architecture-diagram {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .architecture-layer {
+        background: #333333 !important;
+        border-left: 4px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .layer-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .layer-description {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .tech-badge {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+    }
+
+    /* FAQ Section */
+    .high-contrast .faq-item {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .faq-item:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .faq-question {
+        color: #ffff00 !important;
+        background: #000000 !important;
+    }
+
+    .high-contrast .faq-question:hover {
+        background: #333333 !important;
+    }
+
+    .high-contrast .faq-question i {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .faq-answer {
+        color: #cccccc !important;
+        background: #000000 !important;
+    }
+
+    /* Tech Stack Section */
+    .high-contrast .tech-stack {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .tech-item {
+        background: #333333 !important;
+        border: 1px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .tech-item:hover {
+        background: #444444 !important;
+        border-color: #ffffff !important;
+        transform: scale(1.05);
+    }
+
+    .high-contrast .tech-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .tech-name {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .tech-desc {
+        color: #cccccc !important;
+    }
+
+    /* Contact Section */
+    .high-contrast .contact-info {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-item {
+        background: #333333 !important;
+        border: 1px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .contact-text {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .contact-text strong {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+
+    /* CTA Section */
+    .high-contrast .cta-section {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .cta-title,
+    .high-contrast .cta-description {
+        color: #ffff00 !important;
+    }
+
+    /* Team Section */
+    .high-contrast .team-grid .team-member {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .team-member:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .member-name {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .member-role {
+        color: #cccccc !important;
+    }
+
+    .high-contrast .team-avatar {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+
+    /* Additional High Contrast Fixes */
+    .high-contrast .steps-container .step-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .steps-container .step-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .audience-grid .audience-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .audience-card:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .audience-icon {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .audience-title {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .audience-text {
+        color: #cccccc !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-header">
+    <div class="container">
+        <h1 class="about-title">Evolução Fitness</h1>
+        <p class="about-subtitle">Plataforma completa para gerenciamento e acompanhamento de atividades físicas e
+            desempenho esportivo com integração IoT para coleta de dados em tempo real</p>
+    </div>
+</div>
+
+<div class="about-container">
+    <!-- Estatísticas -->
+    <div class="about-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">1.500+</div>
+                <div class="stat-label">Usuários Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">25.000+</div>
+                <div class="stat-label">Treinos Registrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">98%</div>
+                <div class="stat-label">Satisfação</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Disponibilidade</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sobre o Projeto -->
+    <div class="about-section">
+        <h2 class="section-title">Sobre o Projeto</h2>
+        <div class="about-content">
+            <p class="about-text">
+                O <strong>Evolução Fitness</strong> nasceu em 2026 como um projeto acadêmico desenvolvido por alunos da
+                Engenharia da Computação da UNIVESP, com a missão de democratizar o acesso a ferramentas profissionais
+                de acompanhamento de performance física. O que começou como um trabalho de projeto integrador do curso
+                rapidamente
+                se transformou em uma plataforma robusta com objetivo de ser
+                utilizada por atletas, treinadores e entusiastas do fitness.
+            </p>
+            <p class="about-text">
+                Nossa plataforma integra tecnologias modernas de desenvolvimento web com APIs externas e uma poderosa
+                camada de Internet das Coisas (IoT) para fornecer dados precisos e análises detalhadas sobre o 
+                desempenho físico. Utilizamos algoritmos de análise de dados para identificar padrões, sugerir melhorias
+                e ajudar nossos usuários a alcançarem seus objetivos de forma mais eficiente e científica.
+            </p>
+
+            <div class="highlight-box">
+                <strong>🎯 Nossa Missão:</strong> Transformar dados de treinamento em insights acionáveis,
+                capacitando cada pessoa a alcançar seu máximo potencial físico através de tecnologia acessível e
+                intuitiva, incluindo integração completa com dispositivos IoT para coleta de dados em tempo real.
+            </div>
+
+            <p class="about-text">
+                Diferentemente de outras plataformas, o Evolução Fitness não apenas registra seus treinos - nós
+                analisamos,
+                comparamos e fornecemos recomendações personalizadas baseadas em seu histórico e objetivos. Com nossa
+                integração IoT, coletamos dados em tempo real diretamente de seus dispositivos fitness, eliminando
+                entrada manual e garantindo precisão máxima. Nossa abordagem orientada por dados garante que cada 
+                sessão de treino seja otimizada para resultados máximos.
+            </p>
+        </div>
+    </div>
+
+    <!-- Benefícios -->
+    <div class="about-section">
+        <h2 class="section-title">Por Que Escolher o Evolução Fitness?</h2>
+        <div class="benefits-grid">
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="benefit-title">Análise Inteligente</h3>
+                <p class="benefit-description">
+                    Algoritmos avançados analisam seu desempenho e identificam tendências,
+                    ajudando você a tomar decisões baseadas em dados reais.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="benefit-title">Acesso em Qualquer Lugar</h3>
+                <p class="benefit-description">
+                    Interface responsiva que funciona perfeitamente em desktop, tablet e smartphone.
+                    Seus dados sempre à mão.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="benefit-title">Segurança Total</h3>
+                <p class="benefit-description">
+                    Seus dados são criptografados e armazenados com segurança. Privacidade e
+                    proteção são nossas prioridades.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <h3 class="benefit-title">Sincronização Automática</h3>
+                <p class="benefit-description">
+                    Integração com APIs externas para importação automática de dados de
+                    dispositivos e aplicativos fitness.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="benefit-title">Comunidade Ativa</h3>
+                <p class="benefit-description">
+                    Conecte-se com outros atletas, compartilhe conquistas e participe de
+                    desafios motivadores.
+                </p>
+            </div>
+
+            <div class="benefit-card">
+                <div class="benefit-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <h3 class="benefit-title">100% Gratuito</h3>
+                <p class="benefit-description">
+                    Todas as funcionalidades principais disponíveis gratuitamente neste momento de teste.
+                    Sem taxas ocultas ou limitações.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Como Funciona -->
+    <div class="about-section">
+        <h2 class="section-title">Como Funciona</h2>
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Cadastre-se</h3>
+                <p class="step-description">
+                    Crie sua conta gratuitamente em menos de 1 minuto.
+                    Preencha suas informações básicas e defina seus objetivos.
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Configure seu Perfil</h3>
+                <p class="step-description">
+                    Adicione suas métricas iniciais, escolha os tipos de treino
+                    que você pratica e personalize seu dashboard.
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Registre seus Treinos</h3>
+                <p class="step-description">
+                    Após cada sessão, registre seus resultados. O sistema aceita
+                    diversos tipos de métricas: tempo, distância, peso, repetições.
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Acompanhe sua Evolução</h3>
+                <p class="step-description">
+                    Visualize gráficos detalhados, compare períodos e receba
+                    insights sobre seu progresso e áreas de melhoria.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Funcionalidades Principais -->
+    <div class="about-section">
+        <h2 class="section-title">Funcionalidades Principais</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <h3 class="feature-title">Dashboard Interativo</h3>
+                <p class="feature-description">
+                    Visualize seu progresso com gráficos Chart.js dinâmicos, estatísticas em tempo real
+                    e comparações de desempenho entre diferentes períodos.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="feature-title">Registro de Treinos</h3>
+                <p class="feature-description">
+                    Interface intuitiva para registrar atividades diárias com suporte a múltiplas
+                    unidades de medida (minutos, km, kg, repetições).
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="feature-title">Calendário de Treinos</h3>
+                <p class="feature-description">
+                    Visualização em calendário de todos os seus treinos, facilitando o planejamento
+                    e identificação de padrões de frequência.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h3 class="feature-title">Sistema de Ranking</h3>
+                <p class="feature-description">
+                    Compare seu desempenho com outros usuários em rankings dinâmicos por modalidade,
+                    período e categoria.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="feature-title">Relatórios Detalhados</h3>
+                <p class="feature-description">
+                    Gere relatórios estatísticos completos com médias, totais, recordes pessoais
+                    e análise de progressão.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <h3 class="feature-title">Perfil Personalizável</h3>
+                <p class="feature-description">
+                    Gerencie suas informações, avatar, metas de treinamento e preferências de
+                    visualização de dados.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="feature-title">Rede Social Fitness</h3>
+                <p class="feature-description">
+                    Interaja com a comunidade: acompanhe o feed de atividades, dê kudos e comente
+                    nos treinos de outros atletas.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Segurança Avançada</h3>
+                <p class="feature-description">
+                    Proteção de dados e login seguro com <strong>Puzzle Captcha</strong> para garantir
+                    que você é humano e manter sua conta segura.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h3 class="feature-title">Integração IoT Completa</h3>
+                <p class="feature-description">
+                    Conecte seus dispositivos fitness (monitores cardíacos, contadores de passos, GPS) para coleta
+                    automática de dados em tempo real. Suporte a MQTT, sensores variados e processamento inteligente
+                    de leituras.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="about-section">
+        <h2 class="section-title">Nossa Jornada</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-date">Janeiro 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">� Ideação e Planejamento</h3>
+                    <p class="timeline-description">
+                        Definição da arquitetura do sistema, escolha de tecnologias (Django, Bootstrap) e criação dos
+                        primeiros wireframes. Pesquisa de mercado e análise de funcionalidades.
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Fevereiro 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">🛠️ Desenvolvimento do MVP</h3>
+                    <p class="timeline-description">
+                        Implementação do núcleo do sistema: Autenticação, Dashboard Interativo e Registro de Treinos.
+                        Integração inicial com banco de dados SQLite.
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Março 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">� Segurança e Gamificação</h3>
+                    <p class="timeline-description">
+                        Implementação de segurança avançada com <strong>Puzzle Captcha</strong> e sistema de Ranking
+                        para estimular a competição saudável entre usuários.
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Abril 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">🌐 Expansão Social</h3>
+                    <p class="timeline-description">
+                        Lançamento das funcionalidades sociais: Feed de Atividades, sistema de Kudos (curtidas)
+                        e Comentários. A plataforma se torna uma verdadeira comunidade fitness.
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-date">Maio 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">🚀 Lançamento Oficial</h3>
+                    <p class="timeline-description">
+                        Versão 1.0 estável com todas as funcionalidades integradas, tema claro "Vibrant" otimizado
+                        e suporte completo a dispositivos móveis.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-date">Maio 2026</div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">📡 Revolução IoT</h3>
+                    <p class="timeline-description">
+                        Implementação completa da camada de Internet das Coisas: suporte a dispositivos ESP32,
+                        protocolo MQTT, processamento automático de leituras de sensores, sistema de alertas
+                        inteligentes e dashboard IoT dedicado para monitoramento em tempo real.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Arquitetura -->
+    <div class="about-section">
+        <h2 class="section-title">Arquitetura do Sistema</h2>
+        <div class="architecture-diagram">
+            <div class="architecture-layers">
+                <div class="architecture-layer">
+                    <h3 class="layer-title">🎨 Camada de Apresentação</h3>
+                    <p class="layer-description">
+                        Interface responsiva e moderna construída com HTML5, CSS3 e JavaScript.
+                        Utiliza Bootstrap 5 para componentes e Chart.js para visualizações.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">HTML5</span>
+                        <span class="tech-badge">CSS3</span>
+                        <span class="tech-badge">JavaScript</span>
+                        <span class="tech-badge">Bootstrap 5</span>
+                        <span class="tech-badge">Chart.js</span>
+                    </div>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3 class="layer-title">⚙️ Camada de Aplicação</h3>
+                    <p class="layer-description">
+                        Backend robusto desenvolvido em Django 6.0, seguindo o padrão MVT (Model-View-Template).
+                        Django REST Framework para APIs RESTful.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">Python 3.12</span>
+                        <span class="tech-badge">Django 6.0</span>
+                        <span class="tech-badge">Django REST Framework</span>
+                        <span class="tech-badge">Django CORS Headers</span>
+                    </div>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3 class="layer-title">💾 Camada de Dados</h3>
+                    <p class="layer-description">
+                        Banco de dados relacional SQLite para desenvolvimento, com suporte para migração
+                        para PostgreSQL em produção. ORM do Django para abstração de dados.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">SQLite</span>
+                        <span class="tech-badge">PostgreSQL (Produção)</span>
+                        <span class="tech-badge">Django ORM</span>
+                    </div>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3 class="layer-title">🔌 Integrações Externas</h3>
+                    <p class="layer-description">
+                        Consumo de APIs externas para enriquecimento de dados. Sistema modular permite
+                        fácil adição de novas integrações.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">DummyJSON API</span>
+                        <span class="tech-badge">Requests</span>
+                        <span class="tech-badge">RESTful APIs</span>
+                    </div>
+                </div>
+                
+                <div class="architecture-layer">
+                    <h3 class="layer-title">📡 Camada IoT</h3>
+                    <p class="layer-description">
+                        Sistema completo de gerenciamento de dispositivos IoT com protocolo MQTT,
+                        processamento de leituras em tempo real, sistema de alertas inteligentes e
+                        dashboard dedicado para monitoramento de sensores.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">MQTT Protocol</span>
+                        <span class="tech-badge">ESP32 Integration</span>
+                        <span class="tech-badge">Real-time Processing</span>
+                        <span class="tech-badge">Sensor Management</span>
+                        <span class="tech-badge">Alert System</span>
+                    </div>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3 class="layer-title">🔒 Segurança</h3>
+                    <p class="layer-description">
+                        Sistema de autenticação Django com sessões seguras, proteção CSRF,
+                        validação de dados e captcha personalizado.
+                    </p>
+                    <div class="layer-tech">
+                        <span class="tech-badge">Django Auth</span>
+                        <span class="tech-badge">CSRF Protection</span>
+                        <span class="tech-badge">Session Management</span>
+                        <span class="tech-badge">Puzzle Captcha</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Público-Alvo -->
+    <div class="about-section">
+        <h2 class="section-title">Público-Alvo</h2>
+        <div class="target-audience">
+            <h3 class="target-title">Para quem é o Evolução Fitness?</h3>
+            <div class="audience-list">
+                <div class="audience-item">
+                    <i class="fas fa-dumbbell audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Atletas Amadores</strong><br>
+                        Pessoas que praticam atividades físicas regularmente e desejam acompanhar
+                        seu progresso de forma organizada e profissional.
+                    </p>
+                </div>
+
+                <div class="audience-item">
+                    <i class="fas fa-running audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Praticantes de Esportes</strong><br>
+                        Corredores, ciclistas, nadadores, praticantes de musculação e outros esportes
+                        que buscam otimizar seu desempenho.
+                    </p>
+                </div>
+
+                <div class="audience-item">
+                    <i class="fas fa-heartbeat audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Personal Trainers</strong><br>
+                        Profissionais que acompanham múltiplos alunos e precisam de ferramentas
+                        para monitorar progresso e resultados.
+                    </p>
+                </div>
+
+                <div class="audience-item">
+                    <i class="fas fa-users audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Profissionais da Saúde</strong><br>
+                        Fisioterapeutas, nutricionistas e médicos que desejam acompanhar a evolução
+                        física de seus pacientes.
+                    </p>
+                </div>
+
+                <div class="audience-item">
+                    <i class="fas fa-graduation-cap audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Acadêmicos e Pesquisadores</strong><br>
+                        Estudantes e pesquisadores que buscam ferramentas para coleta e análise
+                        de dados de desempenho físico.
+                    </p>
+                </div>
+
+                <div class="audience-item">
+                    <i class="fas fa-medal audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Atletas Competitivos</strong><br>
+                        Competidores que precisam de análises detalhadas para melhorar performance
+                        e alcançar melhores resultados.
+                    </p>
+                </div>
+                
+                <div class="audience-item">
+                    <i class="fas fa-microchip audience-icon"></i>
+                    <p class="audience-text">
+                        <strong>Entusiastas de Tecnologia</strong><br>
+                        Pessoas interessadas em dispositivos conectados, IoT e automação pessoal
+                        para otimizar seus treinos através de dados em tempo real.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tecnologias -->
+    <div class="about-section">
+        <h2 class="section-title">Tecnologias Utilizadas</h2>
+        <div class="tech-stack">
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <div class="tech-name">Python 3.12</div>
+                    <div class="tech-desc">Linguagem principal do backend</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <div class="tech-name">Django 5.0</div>
+                    <div class="tech-desc">Framework web robusto e escalável</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="tech-name">SQLite / PostgreSQL</div>
+                    <div class="tech-desc">Banco de dados relacional</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-bootstrap"></i>
+                    </div>
+                    <div class="tech-name">Bootstrap 5</div>
+                    <div class="tech-desc">Framework CSS responsivo</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fab fa-js"></i>
+                    </div>
+                    <div class="tech-name">JavaScript ES6+</div>
+                    <div class="tech-desc">Interatividade e dinamismo</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="tech-name">Chart.js</div>
+                    <div class="tech-desc">Visualização de dados interativa</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="tech-name">Django REST Framework</div>
+                    <div class="tech-desc">APIs RESTful poderosas</div>
+                </div>
+
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="tech-name">Pillow</div>
+                    <div class="tech-desc">Processamento de imagens</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="tech-name">MQTT Protocol</div>
+                    <div class="tech-desc">Comunicação IoT em tempo real</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-satellite"></i>
+                    </div>
+                    <div class="tech-name">ESP32 Integration</div>
+                    <div class="tech-desc">Suporte a microcontroladores IoT</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="tech-name">Sistema de Alertas</div>
+                    <div class="tech-desc">Monitoramento inteligente de dados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="about-section">
+        <h2 class="section-title">Perguntas Frequentes</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <div class="faq-question">
+                    O Evolução Fitness é realmente gratuito?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sim! Todas as funcionalidades principais são 100% gratuitas. Você pode registrar treinos ilimitados,
+                    acessar relatórios completos, visualizar gráficos e participar do ranking sem pagar nada.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Meus dados estão seguros?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Absolutamente. Utilizamos as melhores práticas de segurança do Django, incluindo criptografia de
+                    senhas,
+                    proteção CSRF, validação de dados e sessões seguras. Seus dados nunca são compartilhados com
+                    terceiros.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Posso usar em dispositivos móveis?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sim! Nossa plataforma é totalmente responsiva e funciona perfeitamente em smartphones e tablets.
+                    Estamos também desenvolvendo aplicativos nativos para iOS e Android que serão lançados em breve.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Quais tipos de treino posso registrar?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Você pode registrar qualquer tipo de atividade física! O sistema suporta diferentes unidades de
+                    medida:
+                    tempo (minutos), distância (km), peso (kg), repetições e outras métricas personalizadas.
+                    Além disso, com nossa integração IoT, você pode conectar dispositivos como monitores cardíacos,
+                    contadores de passos e rastreadores GPS para coleta automática de dados em tempo real.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Posso exportar meus dados?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sim! Você tem total controle sobre seus dados. É possível exportar relatórios em PDF e seus dados
+                    em formato CSV para análise em outras ferramentas.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Como funciona o sistema de ranking?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    O ranking é calculado com base no desempenho médio dos usuários em diferentes modalidades.
+                    Você pode filtrar por tipo de treino, período e categoria para comparações mais justas.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Preciso de conhecimentos técnicos para usar?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Não! A interface foi projetada para ser intuitiva e fácil de usar. Qualquer pessoa pode começar
+                    a registrar treinos e visualizar seu progresso em minutos.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Há suporte técnico disponível?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Sim! Nossa equipe está disponível via email para responder dúvidas e resolver problemas.
+                    Também temos uma documentação completa e tutoriais em vídeo.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    Como funciona a integração com dispositivos IoT?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Nossa plataforma suporta dispositivos ESP32 e outros microcontroladores através do protocolo MQTT.
+                    Os dispositivos enviam dados em tempo real (frequência cardíaca, passos, localização, etc.)
+                    que são automaticamente processados e convertidos em registros de treino. Você também recebe
+                    alertas inteligentes quando valores estão fora dos padrões configurados.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipe -->
+    <div class="about-section">
+        <h2 class="section-title">Nossa Equipe</h2>
+        <div class="team-grid">
+            <!-- Marco Antonio Rodrigues -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/avatar_3.jpg" alt="Marco Antonio Rodrigues">
+                </div>
+                <h3 class="team-name">Marco Antonio Rodrigues</h3>
+                <p class="team-role">Desenvolvedor Full Stack</p>
+                <p class="team-bio">
+                    Coordenador técnico do projeto. Responsável pela arquitetura backend, integração de APIs e supervisão técnica geral.
+                </p>
+            </div>
+
+            <!-- Edna Aparecida da Silva Menossi -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/avatar_0.jpg" alt="Edna Aparecida da Silva Menossi">
+                </div>
+                <h3 class="team-name">Edna Aparecida da Silva Menossi</h3>
+                <p class="team-role">Analista de Banco de Dados</p>
+                <p class="team-bio">
+                    Especialista em modelagem de dados e otimização de consultas. Responsável pela estruturação e manutenção do banco de dados.
+                </p>
+            </div>
+
+            <!-- Alvaro Benedito de Oliveira Bianchi -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/alv.jpeg" alt="Alvaro Benedito de Oliveira Bianchi">
+                </div>
+                <h3 class="team-name">Alvaro Benedito de Oliveira Bianchi</h3>
+                <p class="team-role">Engenheiro de Software</p>
+                <p class="team-bio">
+                    Focado em desenvolvimento backend e implementação de funcionalidades críticas. Contribuiu para a lógica de negócios.
+                </p>
+            </div>
+
+            <!-- Djalma Correa Vaz -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/testeusuario.jpeg" alt="Djalma Correa Vaz">
+                </div>
+                <h3 class="team-name">Djalma Correa Vaz</h3>
+                <p class="team-role">Especialista em IoT</p>
+                <p class="team-bio">
+                    Responsável pela integração de dispositivos IoT e comunicação MQTT. Desenvolveu os protocolos de sincronização.
+                </p>
+            </div>
+
+            <!-- Rodrigo Gargani Oliveira -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/avatar_2.jpg" alt="Rodrigo Gargani Oliveira">
+                </div>
+                <h3 class="team-name">Rodrigo Gargani Oliveira</h3>
+                <p class="team-role">Designer UX/UI</p>
+                <p class="team-bio">
+                    Criou toda a interface do usuário e experiência. Responsável pelo design responsivo e usabilidade da plataforma.
+                </p>
+            </div>
+
+            <!-- Danilo Monari Baptista dos Santos -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/avatar_4.jpg" alt="Danilo Monari Baptista dos Santos">
+                </div>
+                <h3 class="team-name">Danilo Monari Baptista dos Santos</h3>
+                <p class="team-role">Desenvolvedor Frontend</p>
+                <p class="team-bio">
+                    Especialista em tecnologias frontend. Implementou componentes interativos e otimizou a performance do client-side.
+                </p>
+            </div>
+
+            <!-- James Neves dos Santos -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/images_1_1.jpeg" alt="James Neves dos Santos">
+                </div>
+                <h3 class="team-name">James Neves dos Santos</h3>
+                <p class="team-role">Analista de Qualidade</p>
+                <p class="team-bio">
+                    Responsável pelos testes automatizados e garantia de qualidade. Implementou estratégias de teste e validação.
+                </p>
+            </div>
+
+            <!-- Giovana Stucchi -->
+            <div class="team-member">
+                <div class="team-avatar">
+                    <img src="/media/avatars/newuser.jpeg" alt="Giovana Stucchi">
+                </div>
+                <h3 class="team-name">Giovana Stucchi</h3>
+                <p class="team-role">Gerente de Projeto</p>
+                <p class="team-bio">
+                    Coordenou o planejamento e execução do projeto. Responsável pela gestão de prazos, recursos e comunicação da equipe.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Informações de Contato -->
+    <div class="contact-info">
+        <h3 class="contact-title">Entre em Contato</h3>
+        <p style="color: #6b7280; margin-bottom: 2rem;">
+            Tem dúvidas, sugestões ou quer saber mais sobre o projeto? Estamos aqui para ajudar!
+        </p>
+        <div class="contact-details">
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <p class="contact-text"><strong>Email</strong><br>contato@evolucaofitness.com.br</p>
+            </div>
+
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <p class="contact-text"><strong>Telefone</strong><br>(11) 99999-9999</p>
+            </div>
+
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <p class="contact-text"><strong>Instituição</strong><br>UNIVESP - Engenharia da Computação</p>
+            </div>
+
+            <div class="contact-item">
+                <div class="contact-icon">
+                    <i class="fab fa-github"></i>
+                </div>
+                <p class="contact-text"><strong>GitHub</strong><br>github.com/evolucaofitness</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Final -->
+    <div class="cta-section">
+        <h2 class="cta-title">Pronto para Evoluir?</h2>
+        <p class="cta-description">
+            Junte-se a milhares de atletas que já estão transformando seus treinos em resultados concretos.
+        </p>
+        <div class="cta-buttons">
+            {% if not user.is_authenticated %}
+            <a href="{% url 'register_view' %}" class="cta-button cta-button-primary">
+                <i class="fas fa-user-plus"></i> Criar Conta Grátis
+            </a>
+            {% endif %}
+            <a href="{% url 'home' %}" class="cta-button cta-button-secondary">
+                <i class="fas fa-home"></i> Voltar para Home
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // FAQ Accordion
+    document.addEventListener('DOMContentLoaded', function () {
+        const faqQuestions = document.querySelectorAll('.faq-question');
+
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', function () {
+                const answer = this.nextElementSibling;
+                const icon = this.querySelector('i');
+
+                // Toggle answer visibility
+                if (answer.style.display === 'block') {
+                    answer.style.display = 'none';
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    // Close all other answers
+                    document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+                    document.querySelectorAll('.faq-question i').forEach(i => i.style.transform = 'rotate(0deg)');
+
+                    answer.style.display = 'block';
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

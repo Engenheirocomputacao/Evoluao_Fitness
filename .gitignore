@@ -1,0 +1,44 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+
+# Django
+/media/
+/static/
+staticfiles/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Backup files
+*.backup
+*.backup2
+*.bak
+*~
+
+# Project specific
+backup_*/
+
+# Environment
+.env
+*.log
+
+# Test files
+tests/manual/*.html
+rendered_*.html
+
+# Environment
+.qoder/

@@ -1,0 +1,895 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Ranking - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: rgba(0, 0, 0, 0);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 1rem;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.5rem;
+        background: rgba(255, 255, 255, 0.1);
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        min-width: 120px;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .btn-back i {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-back:hover i {
+        transform: translateX(-3px);
+    }
+    
+    .ranking-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .ranking-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background 0.3s ease;
+    }
+    
+    .ranking-item:hover {
+        background: #f9fafb;
+    }
+    
+    .ranking-item:last-child {
+        border-bottom: none;
+    }
+    
+    .ranking-checkbox {
+        margin-right: 1rem;
+        width: 20px;
+        height: 20px;
+    }
+    
+    .ranking-position {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .position-1 {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: white;
+    }
+    
+    .position-2 {
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+        color: white;
+    }
+    
+    .position-3 {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        color: white;
+    }
+    
+    .position-other {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+    
+    .ranking-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .ranking-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .ranking-name {
+        font-weight: 600;
+        color: var(--dark-color);
+        margin-bottom: 0.25rem;
+    }
+    
+    .ranking-details {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .ranking-score {
+        text-align: right;
+    }
+    
+    .ranking-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    
+    .ranking-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .user-position {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .user-position-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-position-value {
+        font-size: 3rem;
+        font-weight: 800;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+    }
+    
+    .empty-state-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+    
+    .compare-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+        display: none;
+    }
+    
+    .compare-section.active {
+        display: block;
+    }
+    
+    .compare-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .compare-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dark-color);
+    }
+    
+    .compare-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .compare-table td, .compare-table th {
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .compare-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        justify-content: center;
+    }
+    
+    .btn-compare {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-compare:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-compare:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .btn-clear-selection {
+        background: #6b7280;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-clear-selection:hover {
+        background: #4b5563;
+    }
+    
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 2rem 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .ranking-section {
+            padding: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+        }
+        
+        .ranking-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+        
+        .ranking-checkbox {
+            position: relative;
+            right: auto;
+            top: auto;
+            margin-right: 1rem;
+        }
+        
+        .ranking-score {
+            text-align: left;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-position {
+            padding: 1rem;
+        }
+        
+        .user-position-value {
+            font-size: 2rem;
+        }
+        
+        .compare-actions {
+            flex-direction: column;
+        }
+        
+        .compare-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .ranking-position {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+        
+        .ranking-value {
+            font-size: 1.25rem;
+        }
+        
+        .ranking-name {
+            font-size: 0.95rem;
+        }
+    }
+    
+    /* High Contrast Mode - Ranking Page Specific */
+    .high-contrast .page-header {
+        background: #000000 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .page-title,
+    .high-contrast .page-subtitle {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-section {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-section:hover {
+        background: #333333 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .section-title {
+        color: #ffff00 !important;
+        border-bottom: 2px solid #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-item {
+        background: #000000 !important;
+        border: 1px solid #333333 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-item:hover {
+        background: #333333 !important;
+        border-color: #ffff00 !important;
+    }
+    
+    .high-contrast .highlight-user {
+        background: #333333 !important;
+        border-left: 4px solid #ffff00 !important;
+    }
+    
+    .high-contrast .highlight-user:hover {
+        background: #444444 !important;
+        border-color: #ffffff !important;
+    }
+    
+    .high-contrast .ranking-position {
+        background: #333333 !important;
+        color: #ffff00 !important;
+        border: 1px solid #ffff00 !important;
+    }
+    
+    .high-contrast .position-1,
+    .high-contrast .position-2,
+    .high-contrast .position-3 {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+    
+    .high-contrast .ranking-name,
+    .high-contrast .ranking-details {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-value {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .ranking-label {
+        color: #cccccc !important;
+    }
+    
+    .high-contrast .ranking-checkbox {
+        accent-color: #ffff00 !important;
+    }
+    
+    .high-contrast .ranking-checkbox:checked {
+        background: #ffff00 !important;
+    }
+    
+    .high-contrast .btn-compare,
+    .high-contrast .btn-clear-selection {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-compare:hover,
+    .high-contrast .btn-clear-selection:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+    
+    .high-contrast .btn-compare:disabled,
+    .high-contrast .btn-clear-selection:disabled {
+        background: #333333 !important;
+        color: #666666 !important;
+        border-color: #666666 !important;
+    }
+    
+    .high-contrast .user-position {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .user-position-title {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .user-position-value {
+        color: #ffff00 !important;
+        font-weight: bold !important;
+    }
+    
+    .high-contrast .compare-section {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .compare-title {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .compare-table {
+        background: #000000 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .compare-table th {
+        background: #333333 !important;
+        color: #ffff00 !important;
+        border: 1px solid #ffff00 !important;
+    }
+    
+    .high-contrast .compare-table td {
+        background: #000000 !important;
+        color: #ffff00 !important;
+        border: 1px solid #333333 !important;
+    }
+    
+    .high-contrast .empty-state {
+        background: #000000 !important;
+        border: 2px dashed #ffff00 !important;
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .empty-state h4 {
+        color: #ffff00 !important;
+    }
+    
+    .high-contrast .empty-state p {
+        color: #cccccc !important;
+    }
+    
+    .high-contrast .btn-back {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+    
+    .high-contrast .btn-back:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">
+            <i class="fas fa-trophy"></i>
+            Ranking de Atletas
+        </h1>
+        <p class="page-subtitle">Compare seu desempenho com outros usuários</p>
+    </div>
+</div>
+
+<div class="container mb-4">
+    <div class="d-flex justify-content-center w-100">
+        <a href="{% url 'home_view' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+    
+    <!-- Posição do Usuário -->
+    {% if posicao_usuario %}
+        <div class="user-position">
+            <div class="user-position-title">Sua Posição no Ranking Geral</div>
+            <div class="user-position-value">#{{ posicao_usuario }}</div>
+        </div>
+    {% endif %}
+    
+    <!-- Seção de Comparação -->
+    <div class="compare-section" id="compareSection">
+        <div class="compare-header">
+            <h2 class="compare-title">
+                <i class="fas fa-balance-scale"></i>
+                Comparação de Desempenho
+            </h2>
+            <button class="btn-clear-selection" id="clearSelectionBtn">
+                <i class="fas fa-times"></i> Limpar Seleção
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="compare-table" id="compareTable">
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <!-- Os nomes dos usuários serão inseridos aqui dinamicamente -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Média Geral</td>
+                        <!-- Os valores serão inseridos aqui dinamicamente -->
+                    </tr>
+                    <tr>
+                        <td>Total de Registros</td>
+                        <!-- Os valores serão inseridos aqui dinamicamente -->
+                    </tr>
+                    <tr>
+                        <td>Melhor Treinamento</td>
+                        <!-- Os valores serão inseridos aqui dinamicamente -->
+                    </tr>
+                    <tr>
+                        <td>Consistência</td>
+                        <!-- Os valores serão inseridos aqui dinamicamente -->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="compare-actions">
+            <button class="btn-clear-selection" id="closeCompareBtn">
+                <i class="fas fa-times"></i> Fechar Comparação
+            </button>
+        </div>
+    </div>
+    
+    <!-- Ranking Geral -->
+    <div class="ranking-section">
+        <h2 class="section-title">
+            <span>
+                <i class="fas fa-medal"></i>
+                Ranking Geral (Todos os Tempos)
+            </span>
+            <button class="btn-compare" id="compareBtn" disabled>
+                <i class="fas fa-balance-scale"></i> Comparar Selecionados
+            </button>
+        </h2>
+        {% if ranking_geral %}
+            <ul class="ranking-list">
+                {% for item in ranking_geral %}
+                    <li class="ranking-item {% if item.individuo__nome_completo == individuo.nome_completo %}highlight-user{% endif %}">
+                        <input type="checkbox" class="ranking-checkbox" value="{{ item.individuo__nome_completo }}" data-media="{{ item.media_geral|floatformat:2 }}" data-registros="{{ item.total_registros }}">
+                        <div class="ranking-position {% if item.rank <= 3 %}position-{{ item.rank }}{% else %}position-other{% endif %}">
+                            {% if item.rank <= 3 %}
+                                <i class="fas fa-trophy"></i>
+                            {% endif %}
+                            {{ item.rank }}
+                        </div>
+                        <div class="ranking-info">
+                            {% if item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
+                            <div class="ranking-avatar">
+                                <img src="{{ user.individuo.avatar.url }}" alt="Avatar" class="avatar-img">
+                            </div>
+                            {% endif %}
+                            <div class="ranking-name">{{ item.individuo__nome_completo }}</div>
+                            <div class="ranking-details">{{ item.total_registros }} registros</div>
+                        </div>
+                        <div class="ranking-score">
+                            <div class="ranking-value">{{ item.media_geral|floatformat:2 }}</div>
+                            <div class="ranking-label">Média</div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h4>Ranking não disponível</h4>
+                <p>Registre mais treinamentos para aparecer no ranking.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Ranking Mensal -->
+    <div class="ranking-section">
+        <h2 class="section-title">
+            <span>
+                <i class="fas fa-calendar-alt"></i>
+                Ranking Mensal (Últimos 30 dias)
+            </span>
+            <button class="btn-compare" id="compareMonthlyBtn" disabled>
+                <i class="fas fa-balance-scale"></i> Comparar Selecionados
+            </button>
+        </h2>
+        {% if ranking_mensal %}
+            <ul class="ranking-list">
+                {% for item in ranking_mensal %}
+                    <li class="ranking-item {% if item.individuo__nome_completo == individuo.nome_completo %}highlight-user{% endif %}">
+                        <input type="checkbox" class="ranking-checkbox" value="{{ item.individuo__nome_completo }}" data-media="{{ item.media_mensal|floatformat:2 }}" data-registros="{{ item.total_registros }}">
+                        <div class="ranking-position {% if item.rank <= 3 %}position-{{ item.rank }}{% else %}position-other{% endif %}">
+                            {% if item.rank <= 3 %}
+                                <i class="fas fa-star"></i>
+                            {% endif %}
+                            {{ item.rank }}
+                        </div>
+                        <div class="ranking-info">
+                            {% if item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
+                            <div class="ranking-avatar">
+                                <img src="{{ user.individuo.avatar.url }}" alt="Avatar" class="avatar-img">
+                            </div>
+                            {% endif %}
+                            <div class="ranking-name">{{ item.individuo__nome_completo }}</div>
+                            <div class="ranking-details">{{ item.total_registros }} registros este mês</div>
+                        </div>
+                        <div class="ranking-score">
+                            <div class="ranking-value">{{ item.media_mensal|floatformat:2 }}</div>
+                            <div class="ranking-label">Média</div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h4>Ranking mensal não disponível</h4>
+                <p>Continue treinando para aparecer no ranking mensal.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.highlight-user {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(129, 199, 132, 0.1));
+    border-left: 4px solid #4CAF50;
+}
+.highlight-user .ranking-position {
+    background: linear-gradient(135deg, #4CAF50, #81C784);
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos da interface
+        const checkboxes = document.querySelectorAll('.ranking-checkbox');
+        const compareBtn = document.getElementById('compareBtn');
+        const compareMonthlyBtn = document.getElementById('compareMonthlyBtn');
+        const compareSection = document.getElementById('compareSection');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const closeCompareBtn = document.getElementById('closeCompareBtn');
+        const compareTable = document.getElementById('compareTable');
+        
+        // Atualizar estado dos botões de comparação
+        function updateCompareButtons() {
+            const selectedCount = document.querySelectorAll('.ranking-checkbox:checked').length;
+            compareBtn.disabled = selectedCount < 2;
+            compareMonthlyBtn.disabled = selectedCount < 2;
+        }
+        
+        // Adicionar evento listeners para checkboxes
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateCompareButtons);
+        });
+        
+        // Função para realizar a comparação
+        function performComparison() {
+            const selectedCheckboxes = document.querySelectorAll('.ranking-checkbox:checked');
+            
+            if (selectedCheckboxes.length < 2) {
+                alert('Selecione pelo menos 2 participantes para comparar.');
+                return;
+            }
+            
+            // Coletar dados dos selecionados
+            const selectedUsers = [];
+            selectedCheckboxes.forEach(checkbox => {
+                selectedUsers.push({
+                    name: checkbox.value,
+                    media: parseFloat(checkbox.dataset.media),
+                    registros: parseInt(checkbox.dataset.registros)
+                });
+            });
+            
+            // Atualizar tabela de comparação
+            updateComparisonTable(selectedUsers);
+            
+            // Mostrar seção de comparação
+            compareSection.classList.add('active');
+            
+            // Scroll para a seção de comparação
+            compareSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Função para atualizar a tabela de comparação
+        function updateComparisonTable(users) {
+            // Limpar cabeçalho e corpo da tabela
+            const thead = compareTable.querySelector('thead tr');
+            const tbody = compareTable.querySelector('tbody');
+            
+            // Limpar cabeçalho (mantendo a primeira célula)
+            while (thead.children.length > 1) {
+                thead.removeChild(thead.lastChild);
+            }
+            
+            // Limpar corpo da tabela
+            tbody.querySelectorAll('tr').forEach(row => {
+                while (row.children.length > 1) {
+                    row.removeChild(row.lastChild);
+                }
+            });
+            
+            // Adicionar cabeçalhos para cada usuário
+            users.forEach(user => {
+                const th = document.createElement('th');
+                th.textContent = user.name;
+                thead.appendChild(th);
+            });
+            
+            // Adicionar dados na tabela
+            const rows = tbody.querySelectorAll('tr');
+            
+            // Média Geral
+            users.forEach(user => {
+                const td = document.createElement('td');
+                td.textContent = user.media.toFixed(2);
+                rows[0].appendChild(td);
+            });
+            
+            // Total de Registros
+            users.forEach(user => {
+                const td = document.createElement('td');
+                td.textContent = user.registros;
+                rows[1].appendChild(td);
+            });
+            
+            // Melhor Treinamento (simulado)
+            users.forEach(user => {
+                const td = document.createElement('td');
+                // Simulação de melhor treinamento baseado na média
+                if (user.media >= 9) {
+                    td.textContent = 'Corrida';
+                } else if (user.media >= 8) {
+                    td.textContent = 'Musculação';
+                } else if (user.media >= 7) {
+                    td.textContent = 'Natação';
+                } else {
+                    td.textContent = 'Ciclismo';
+                }
+                rows[2].appendChild(td);
+            });
+            
+            // Consistência (simulado)
+            users.forEach(user => {
+                const td = document.createElement('td');
+                // Simulação de consistência baseada no número de registros
+                if (user.registros >= 20) {
+                    td.textContent = 'Excelente';
+                } else if (user.registros >= 10) {
+                    td.textContent = 'Boa';
+                } else {
+                    td.textContent = 'Regular';
+                }
+                rows[3].appendChild(td);
+            });
+        }
+        
+        // Limpar seleção
+        function clearSelection() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateCompareButtons();
+        }
+        
+        // Fechar comparação
+        function closeComparison() {
+            compareSection.classList.remove('active');
+        }
+        
+        // Adicionar eventos aos botões
+        compareBtn.addEventListener('click', performComparison);
+        compareMonthlyBtn.addEventListener('click', performComparison);
+        clearSelectionBtn.addEventListener('click', clearSelection);
+        closeCompareBtn.addEventListener('click', closeComparison);
+        
+        // Inicializar estado dos botões
+        updateCompareButtons();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,939 @@
+        
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Página Inicial - Controle de Treinamento{% endblock %}
+
+{% block extra_head %}
+<style>
+    .hero-section {
+        background: transparent;
+        border-radius: 1.5rem;
+        padding: 5rem 2rem;
+        margin-bottom: 3rem;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: none;
+    }
+
+    .hero-section::after {
+        display: none;
+    }
+
+    .hero-section::before {
+        display: none;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        color: white;
+        margin-bottom: 2rem;
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        hyphens: none;
+        letter-spacing: 0.01em;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 2px solid transparent;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-color);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .feature-icon.dashboard {
+        background: linear-gradient(135deg, #2b23b9, #226ddd);
+    }
+
+    .feature-icon.training {
+        background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .feature-icon.records {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
+    .feature-icon.reports {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .feature-icon.profile {
+        background: linear-gradient(135deg, #3f0d32, #52100c);
+    }
+
+    .feature-icon.ranking {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
+    .feature-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: #232e42;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .feature-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: left 0.3s ease;
+    }
+
+    .feature-btn:hover::before {
+        left: 100%;
+    }
+
+    .feature-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+    }
+
+    .quick-actions {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 3rem;
+    }
+
+    .quick-actions-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .quick-actions-grid {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .quick-action-btn {
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        color: #374151;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .quick-action-btn:hover {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    /* Calendar Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 1rem;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: modalopen 0.3s ease-out;
+    }
+
+    @keyframes modalopen {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .close {
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+    }
+
+    .close:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .calendar-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .nav-button {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        min-width: 120px;
+    }
+
+    .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+    }
+
+    .calendar-month-year {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #8edad6;
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .calendar-day-header {
+        text-align: center;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding: 0.5rem;
+        background-color: #f3f4f6;
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day {
+        min-height: 80px;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        background-color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .calendar-day:hover {
+        background-color: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .calendar-day.empty {
+        background-color: #f9fafb;
+        opacity: 0.5;
+    }
+
+    .calendar-day-number {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day.has-activity {
+        border-color: var(--primary-color);
+        background-color: rgba(79, 70, 229, 0.05);
+    }
+
+    .calendar-day.has-activity .calendar-day-number {
+        color: var(--primary-color);
+    }
+
+    .calendar-activities {
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .calendar-activity {
+        font-size: 0.7rem;
+        margin-bottom: 0.15rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .calendar-activity-icon {
+        margin-right: 0.25rem;
+        color: var(--primary-color);
+        font-size: 0.6rem;
+    }
+
+    .activity-details {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .activity-details-title {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .activity-item {
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .activity-treinamento {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 0.95rem;
+    }
+
+    .activity-valor {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+
+    .activity-observacoes {
+        font-size: 0.8rem;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            margin: 5% auto;
+            max-height: 95vh;
+        }
+
+        .modal-header {
+            padding: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+            max-height: 80vh;
+        }
+
+        .calendar-nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .calendar-month-year {
+            margin: 0.5rem 0;
+        }
+
+        .nav-button {
+            min-width: auto;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .calendar-grid {
+            gap: 0.25rem;
+        }
+
+        .calendar-day-header {
+            font-size: 0.7rem;
+            padding: 0.25rem;
+        }
+
+        .calendar-day {
+            min-height: 60px;
+            padding: 0.25rem;
+        }
+
+        .calendar-day-number {
+            font-size: 0.75rem;
+        }
+
+        .calendar-activity {
+            font-size: 0.6rem;
+        }
+
+        .calendar-activity-icon {
+            font-size: 0.5rem;
+        }
+
+        .activity-header {
+            flex-direction: column;
+        }
+
+        .activity-treinamento,
+        .activity-valor {
+            font-size: 0.85rem;
+        }
+
+        .activity-observacoes {
+            font-size: 0.7rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .calendar-grid {
+            gap: 0.1rem;
+        }
+
+        .calendar-day-header {
+            font-size: 0.6rem;
+            padding: 0.1rem;
+        }
+
+        .calendar-day {
+            min-height: 50px;
+            padding: 0.1rem;
+        }
+
+        .calendar-day-number {
+            font-size: 0.7rem;
+        }
+
+        .calendar-activity {
+            font-size: 0.5rem;
+        }
+
+            .hero-title {
+                font-size: 2rem;
+                word-break: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.1;
+            }
+            .hero-section {
+                padding: 2rem 0.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+        }
+        
+        /* High Contrast Mode - Home Page Specific */
+        .high-contrast .hero-section {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+        }
+        
+        .high-contrast .hero-title,
+        .high-contrast .hero-subtitle {
+            color: #ffff00 !important;
+            text-shadow: none !important;
+        }
+        
+        .high-contrast .feature-card {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .feature-card:hover {
+            background: #333333 !important;
+            border-color: #ffffff !important;
+        }
+        
+        .high-contrast .feature-title {
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .feature-description {
+            color: #cccccc !important;
+        }
+        
+        .high-contrast .feature-btn {
+            background: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+        }
+        
+        .high-contrast .feature-btn:hover {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+        
+        .high-contrast .feature-icon {
+            background: #ffff00 !important;
+            color: #000000 !important;
+        }
+        
+        .high-contrast .quick-actions {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .quick-actions-title {
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .quick-action-btn {
+            background: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+        }
+        
+        .high-contrast .quick-action-btn:hover {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border-color: #000000 !important;
+        }
+        
+        .high-contrast .stats-overview .stat-card {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .stat-number,
+        .high-contrast .stat-label {
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .fitness-pillars span {
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .user-welcome {
+            border: 2px solid #ffff00 !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        .high-contrast .btn-outline-light {
+            background: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+        }
+        
+        .high-contrast .btn-outline-light:hover {
+            background: #ffffff !important;
+            border-color: #000000 !important;
+        }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+            <h1 class="hero-title">Bem-vindo ao seu Controle de Treinamento</h1>
+            {% if user.is_authenticated %}
+            <div class="user-welcome"
+                style="background: transparent; padding: 1rem 2rem; border-radius: 50px; border: 1px solid transparent; margin-left: 2rem; align-self: flex-start; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                {% if user.individuo.avatar %}
+                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(251, 255, 0, 0.658);">
+                    <img src="{{ user.individuo.avatar.url }}" alt="Foto de perfil"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% else %}
+                <i class="fas fa-user-circle" style="font-size: 2rem;"></i>
+                {% endif %}
+                <span style="font-weight: 600; color: white;">
+                    {{ user.get_full_name|default:user.username }}
+                </span>
+                <!-- Botão Sair movido para cá -->
+                <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-light btn-sm"
+                        style="background: rgba(26, 16, 16, 0.2); border: 1px solid rgba(58, 33, 116, 0.3); color: rgb(230, 240, 100); padding: 0.25rem 1rem; border-radius: 50px; font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease;"
+                        onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.borderColor='rgba(255, 255, 255, 0.5)';"
+                        onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.borderColor='rgba(255, 255, 255, 0.3)';">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        <p class="hero-subtitle">Gerencie seus treinos, acompanhe seu progresso e alcance seus objetivos de forma simples e eficiente</p>
+        
+
+        <div class="fitness-pillars" style="margin-bottom: 2rem; display: flex; justify-content: center; gap: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; opacity: 0.9; color: rgba(255, 255, 255, 0.438);">
+            <span><i class="fas fa-dumbbell mr-1"></i> Força</span>
+            <span>•</span>
+            <span><i class="fas fa-running mr-1"></i> Velocidade</span>
+            <span>•</span>
+            <span><i class="fas fa-heartbeat mr-1"></i> Resistência</span>
+        </div>
+
+        <div class="quick-actions-grid">
+            {% if user.is_authenticated %}
+            <a href="{% url 'dashboard_view' %}" class="quick-action-btn">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}" class="quick-action-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Entrar
+            </a>
+            <a href="{% url 'register_view' %}" class="quick-action-btn">
+                <i class="fas fa-user-plus"></i>
+                Cadastrar
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<!-- Stats Overview -->
+<div class="stats-overview">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_registros }}</div>
+        <div class="stat-label">Total de Registros</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ total_treinamentos }}</div>
+        <div class="stat-label">Tipos de Treino</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ media_geral|floatformat:1 }}</div>
+        <div class="stat-label">Média Geral</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">{{ dias_consecutivos }}</div>
+        <div class="stat-label">Dias Consecutivos</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Features Grid -->
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+        </div>
+        <h3 class="feature-title">Dashboard</h3>
+        <p class="feature-description">Visualize seu progresso geral com gráficos interativos e estatísticas detalhadas
+            do seu desempenho</p>
+        <a href="{% url 'dashboard_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Acessar Dashboard
+        </a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon training">
+            <i class="fas fa-dumbbell"></i>
+        </div>
+        <h3 class="feature-title">Treinamentos</h3>
+        <p class="feature-description">Cadastre e gerencie diferentes tipos de treinamentos com suas unidades de medida
+            específicas</p>
+        <a href="{% url 'treinamentos_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Gerenciar Treinos
+        </a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon records">
+            <i class="fas fa-clipboard-check"></i>
+        </div>
+        <h3 class="feature-title">Registros</h3>
+        <p class="feature-description">Registre suas atividades diárias, acompanhe sua evolução e mantenha um histórico
+            completo</p>
+        <a href="{% url 'registros_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Novo Registro
+        </a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon reports">
+            <i class="fas fa-chart-bar"></i>
+        </div>
+        <h3 class="feature-title">Relatórios</h3>
+        <p class="feature-description">Gere relatórios detalhados do seu progresso, compare períodos e identifique
+            padrões</p>
+        <a href="{% url 'relatorios_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Ver Relatórios
+        </a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon profile">
+            <i class="fas fa-user-cog"></i>
+        </div>
+        <h3 class="feature-title">Perfil</h3>
+        <p class="feature-description">Configure suas informações pessoais, preferências e metas de treinamento</p>
+        <a href="{% url 'perfil_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Meu Perfil
+        </a>
+    </div>
+
+    <div class="feature-card">
+        <div class="feature-icon ranking">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <h3 class="feature-title">Ranking</h3>
+        <p class="feature-description">Compare seu desempenho com outros usuários e suba no ranking de melhores atletas
+        </p>
+        <a href="{% url 'ranking_view' %}" class="feature-btn">
+            <i class="fas fa-arrow-right"></i>
+            Ver Ranking
+        </a>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <h2 class="quick-actions-title">Ações Rápidas</h2>
+    <div class="quick-actions-grid">
+        <a href="{% url 'registros_view' %}" class="quick-action-btn">
+            <i class="fas fa-plus"></i>
+            Novo Registro
+        </a>
+        <a href="{% url 'dashboard_view' %}" class="quick-action-btn">
+            <i class="fas fa-chart-line"></i>
+            Ver Progresso
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'calendar_view' %}" class="quick-action-btn">
+            <i class="fas fa-calendar-alt"></i>
+            Calendário
+        </a>
+        {% endif %}
+        <a href="{% url 'relatorios_view' %}" class="quick-action-btn">
+            <i class="fas fa-bullseye"></i>
+            Metas
+        </a>
+        <!-- Botão Inserir Usuário - visível apenas para administradores -->
+        {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'register_view' %}" class="quick-action-btn"
+            style="background: linear-gradient(135deg, #31b61f, #1d6317); color: white;">
+            <i class="fas fa-user-plus"></i>
+            Inserir Usuário
+        </a>
+        {% endif %}
+        
+        <!-- Botão Sobre -->
+        <a href="{% url 'sobre_view' %}" class="quick-action-btn"
+            style="background: linear-gradient(135deg, #64748b, #475569); color: white;">
+            <i class="fas fa-info-circle"></i>
+            Sobre
+        </a>
+    </div>
+</div>
+
+<!-- Botões de Redes Sociais no Final da Página -->
+<div class="social-footer" style="text-align: center; margin: 3rem 0; padding: 2rem;">
+    <h3 style="font-size: 1.5rem; font-weight: 600; color: #d1dae5; margin-bottom: 1.5rem;">Siga-nos nas Redes Sociais</h3>
+    <div class="social-icons" style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <a href="https://www.facebook.com/univespoficial/?locale=pt_BR" class="social-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background-color: #1877F2; color: white; border-radius: 50%; font-size: 1.5rem; text-decoration: none; transition: transform 0.3s ease;" title="Facebook" target="_blank">
+            <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://x.com/univespoficial?lang=pt" class="social-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background-color: #3c94e7; color: white; border-radius: 50%; font-size: 1.5rem; text-decoration: none; transition: transform 0.3s ease;" title="X" target="_blank">
+            <i class="fab fa-twitter"></i>
+        </a>
+        <a href="https://www.instagram.com/popular/univesp.br/" class="social-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D); color: white; border-radius: 50%; font-size: 1.5rem; text-decoration: none; transition: transform 0.3s ease;" title="Instagram" target="_blank">
+            <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://linkedin.com/company/univesp/" class="social-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background-color: #0077B5; color: white; border-radius: 50%; font-size: 1.5rem; text-decoration: none; transition: transform 0.3s ease;" title="LinkedIn" target="_blank">
+            <i class="fab fa-linkedin-in"></i>
+        </a>
+        <a href="https://www.youtube.com/univesptv" class="social-icon" style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background-color: #FF0000; color: white; border-radius: 50%; font-size: 1.5rem; text-decoration: none; transition: transform 0.3s ease;" title="YouTube" target="_blank">
+            <i class="fab fa-youtube"></i>
+        </a>
+    </div>
+</div>
+
+
+<!-- Removido o modal antigo do calendário -->
+{% endblock %}
