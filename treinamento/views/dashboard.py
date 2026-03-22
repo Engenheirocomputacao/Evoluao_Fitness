@@ -253,7 +253,7 @@ def dashboard_data_api(request):
     
     try:
         # Parâmetros de filtro
-        period_days = request.GET.get('period', '30')
+        period_days = request.GET.get('period', 'all')  # Mudado de '30' para 'all' para mostrar todo o histórico
         training_type = request.GET.get('training_type', '')
         date_from = request.GET.get('date_from', '')
         date_to = request.GET.get('date_to', '')
@@ -662,106 +662,107 @@ def dashboard_data_api(request):
 
         peso_atual = individuo.peso
         peso_history = {}
-        if peso_atual:
-            # Primeiros e últimos registros para calcular tendência
-            primeiro_registro = queryset.order_by('data').first()
-            ultimo_registro = queryset.order_by('-data').first()
+        
+        # SEMPRE criar dados de desempenho, mesmo sem peso
+        # Primeiros e últimos registros para calcular tendência
+        primeiro_registro = queryset.order_by('data').first()
+        ultimo_registro = queryset.order_by('-data').first()
+        
+        if primeiro_registro and ultimo_registro:
+            # Obter média geral do usuário para normalizar
+            media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
+            media_usuario = float(media_usuario) if media_usuario else 10
             
-            if primeiro_registro and ultimo_registro:
-                # Obter média geral do usuário para normalizar
-                media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
-                media_usuario = float(media_usuario) if media_usuario else 10
-                
-                primeira_media_bruta = queryset.filter(
-                    data__gte=primeiro_registro.data,
-                    data__lte=primeiro_registro.data + timedelta(days=7)
-                ).aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
-                
-                ultima_media_bruta = queryset.filter(
-                    data__gte=ultimo_registro.data - timedelta(days=7),
-                    data__lte=ultimo_registro.data
-                ).aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
-                
-                # Converter para escala de 0-10
-                primeira_media = min(10, float(primeira_media_bruta) * 10 / max(media_usuario, 1))
-                ultima_media = min(10, float(ultima_media_bruta) * 10 / max(media_usuario, 1))
-                
-                # Criar histórico de desempenho ao longo do tempo
-                registros_ordenados = queryset.order_by('data')
-                historico_desempenho = []
-                
-                # Pegar registros espaçados para criar histórico
-                total_registros = registros_ordenados.count()
-                if total_registros > 0:
-                    # Pegar no máximo 10 pontos para o histórico
-                    intervalo = max(1, total_registros // 10)
-                    for i in range(0, total_registros, intervalo):
-                        registro = registros_ordenados[i]
-                        # Converter o valor_alcançado para uma escala de 0-10 baseada na média do usuário
-                        # Primeiro obter a média do usuário para normalizar
-                        media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
-                        # Converter para float para evitar problemas de tipo
-                        media_usuario = float(media_usuario) if media_usuario else 10
-                        # Calcular uma escala proporcional, com base em 10 como referência
-                        # Por exemplo, se a média do usuário é 50, e o valor é 100, então seria 10 na escala
-                        # Se a média é 50 e o valor é 25, então seria 5 na escala
-                        valor_normalizado = min(10, float(registro.valor_alcançado) * 10 / max(media_usuario, 1))  # Evitar divisão por zero
-                        
-                        # Obter peso correspondente à data do registro
-                        peso_no_periodo = obter_peso_para_data(individuo, registro.data)
+            primeira_media_bruta = queryset.filter(
+                data__gte=primeiro_registro.data,
+                data__lte=primeiro_registro.data + timedelta(days=7)
+            ).aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
+            
+            ultima_media_bruta = queryset.filter(
+                data__gte=ultimo_registro.data - timedelta(days=7),
+                data__lte=ultimo_registro.data
+            ).aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
+            
+            # Converter para escala de 0-10
+            primeira_media = min(10, float(primeira_media_bruta) * 10 / max(media_usuario, 1))
+            ultima_media = min(10, float(ultima_media_bruta) * 10 / max(media_usuario, 1))
+            
+            # Criar histórico de desempenho ao longo do tempo
+            registros_ordenados = queryset.order_by('data')
+            historico_desempenho = []
+            
+            # Pegar registros espaçados para criar histórico
+            total_registros = registros_ordenados.count()
+            if total_registros > 0:
+                # Pegar no máximo 10 pontos para o histórico
+                intervalo = max(1, total_registros // 10)
+                for i in range(0, total_registros, intervalo):
+                    registro = registros_ordenados[i]
+                    # Converter o valor_alcançado para uma escala de 0-10 baseada na média do usuário
+                    media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
+                    media_usuario = float(media_usuario) if media_usuario else 10
+                    valor_normalizado = min(10, float(registro.valor_alcançado) * 10 / max(media_usuario, 1))
+                    
+                    # Obter peso correspondente à data do registro (pode ser 0 se não tiver peso)
+                    peso_no_periodo = obter_peso_para_data(individuo, registro.data)
 
-                        historico_desempenho.append({
-                            'data': registro.data.isoformat(),
-                            'peso': peso_no_periodo,  # Peso na data do registro
-                            'desempenho_medio': round(valor_normalizado, 2)
-                        })
-                    
-                    # Se tivermos poucos registros, adicionar o primeiro e último
-                    if total_registros > 0:
-                        primeiro = registros_ordenados.first()
-                        ultimo = registros_ordenados.last()
-                        if primeiro != ultimo:
-                            # Adicionar primeiro e último se não estiverem no histórico
-                            primeiro_existe = any(r['data'] == primeiro.data.isoformat() for r in historico_desempenho)
-                            ultimo_existe = any(r['data'] == ultimo.data.isoformat() for r in historico_desempenho)
-                            
-                            if not primeiro_existe:
-                                # Converter o valor_alcançado para uma escala de 0-10 baseada na média do usuário
-                                media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
-                                # Converter para float para evitar problemas de tipo
-                                media_usuario = float(media_usuario) if media_usuario else 10
-                                valor_primeiro_normalizado = min(10, float(primeiro.valor_alcançado) * 10 / max(media_usuario, 1))
-                                # Obter peso correspondente à data do registro
-                                peso_no_periodo = obter_peso_para_data(individuo, primeiro.data)
-                                historico_desempenho.append({
-                                    'data': primeiro.data.isoformat(),
-                                    'peso': peso_no_periodo,
-                                    'desempenho_medio': round(valor_primeiro_normalizado, 2)
-                                })
-                            if not ultimo_existe:
-                                # Converter o valor_alcançado para uma escala de 0-10 baseada na média do usuário
-                                media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
-                                # Converter para float para evitar problemas de tipo
-                                media_usuario = float(media_usuario) if media_usuario else 10
-                                valor_ultimo_normalizado = min(10, float(ultimo.valor_alcançado) * 10 / max(media_usuario, 1))
-                                # Obter peso correspondente à data do registro
-                                peso_no_periodo = obter_peso_para_data(individuo, ultimo.data)
-                                historico_desempenho.append({
-                                    'data': ultimo.data.isoformat(),
-                                    'peso': peso_no_periodo,
-                                    'desempenho_medio': round(valor_ultimo_normalizado, 2)
-                                })
-                    
-                    # Ordenar histórico por data
-                    historico_desempenho.sort(key=lambda x: x['data'])
-            
-                peso_history = {
-                    'peso_atual': float(peso_atual),
-                    'desempenho_inicial': float(round(primeira_media, 2)),
-                    'desempenho_atual': float(round(ultima_media, 2)),
-                    'melhora_desempenho': float(round(ultima_media - primeira_media, 2)),
-                    'historico': historico_desempenho
-                }
+                    historico_desempenho.append({
+                        'data': registro.data.isoformat(),
+                        'peso': peso_no_periodo,  # Peso na data do registro (ou 0)
+                        'desempenho_medio': round(valor_normalizado, 2)
+                    })
+                
+                # Se tivermos poucos registros, adicionar o primeiro e último
+                if total_registros > 0:
+                    primeiro = registros_ordenados.first()
+                    ultimo = registros_ordenados.last()
+                    if primeiro != ultimo:
+                        # Adicionar primeiro e último se não estiverem no histórico
+                        primeiro_existe = any(r['data'] == primeiro.data.isoformat() for r in historico_desempenho)
+                        ultimo_existe = any(r['data'] == ultimo.data.isoformat() for r in historico_desempenho)
+                        
+                        if not primeiro_existe:
+                            media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
+                            media_usuario = float(media_usuario) if media_usuario else 10
+                            valor_primeiro_normalizado = min(10, float(primeiro.valor_alcançado) * 10 / max(media_usuario, 1))
+                            peso_no_periodo = obter_peso_para_data(individuo, primeiro.data)
+                            historico_desempenho.append({
+                                'data': primeiro.data.isoformat(),
+                                'peso': peso_no_periodo,
+                                'desempenho_medio': round(valor_primeiro_normalizado, 2)
+                            })
+                        if not ultimo_existe:
+                            media_usuario = queryset.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 10
+                            media_usuario = float(media_usuario) if media_usuario else 10
+                            valor_ultimo_normalizado = min(10, float(ultimo.valor_alcançado) * 10 / max(media_usuario, 1))
+                            peso_no_periodo = obter_peso_para_data(individuo, ultimo.data)
+                            historico_desempenho.append({
+                                'data': ultimo.data.isoformat(),
+                                'peso': peso_no_periodo,
+                                'desempenho_medio': round(valor_ultimo_normalizado, 2)
+                            })
+                
+                # Ordenar histórico por data
+                historico_desempenho.sort(key=lambda x: x['data'])
+        
+        # Montar estrutura de peso_history SEMPRE (mesmo sem peso)
+        if primeiro_registro and ultimo_registro:
+            peso_history = {
+                'peso_atual': float(peso_atual) if peso_atual else None,
+                'desempenho_inicial': float(round(primeira_media, 2)),
+                'desempenho_atual': float(round(ultima_media, 2)),
+                'melhora_desempenho': float(round(ultima_media - primeira_media, 2)),
+                'historico': historico_desempenho
+            }
+        else:
+            # Sem dados de treinamento
+            peso_history = {
+                'peso_atual': float(peso_atual) if peso_atual else None,
+                'desempenho_inicial': 0,
+                'desempenho_atual': 0,
+                'melhora_desempenho': 0,
+                'historico': []
+            }
         
         # 5. COMPARAÇÃO COM PEERS (Sexo e Faixa Etária)
         def calcular_idade(data_nascimento):

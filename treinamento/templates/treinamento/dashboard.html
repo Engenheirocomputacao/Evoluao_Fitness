@@ -2311,9 +2311,9 @@ window.addEventListener('load', function() {
         <div class="filter-group">
             <select id="periodFilter">
                 <option value="7">Últimos 7 dias</option>
-                <option value="30" selected>Últimos 30 dias</option>
+                <option value="30">Últimos 30 dias</option>
                 <option value="90">Últimos 90 dias</option>
-                <option value="all">Todo período</option>
+                <option value="all" selected>Todo período</option>
             </select>
         </div>
         <div class="filter-group">
@@ -2656,7 +2656,7 @@ window.addEventListener('load', function() {
             refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Atualizando...';
         }
 
-        const period = document.getElementById('periodFilter')?.value || '30';
+        const period = document.getElementById('periodFilter')?.value || 'all';
         const type = document.getElementById('trainingTypeFilter')?.value || '';
 
         try {
@@ -3329,38 +3329,25 @@ window.addEventListener('load', function() {
 
         const ctx = canvas.getContext('2d');
 
-        if (!weightData) {
-            container.innerHTML = `
-                <div class="alert alert-info mb-0">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Dados de peso e desempenho não disponíveis. Adicione registros de peso no seu perfil.
-                </div>`;
-
-            const currentWeightEl = document.getElementById('currentWeight');
-            const performanceGainEl = document.getElementById('performanceGain');
-            const performanceStatusEl = document.getElementById('performanceStatus');
-            const weightTrendEl = document.getElementById('weightTrend');
-
-            if (currentWeightEl) currentWeightEl.innerHTML = '--';
-            if (performanceGainEl) performanceGainEl.innerHTML = '--';
-            if (performanceStatusEl) performanceStatusEl.innerHTML = 'Sem dados';
-            if (weightTrendEl) weightTrendEl.innerHTML = 'Adicione seu peso no perfil';
-
-            return;
-        }
-
         // Atualiza os cards de métricas
         const currentWeightEl = document.getElementById('currentWeight');
         const performanceGainEl = document.getElementById('performanceGain');
         const performanceStatusEl = document.getElementById('performanceStatus');
         const weightTrendEl = document.getElementById('weightTrend');
 
-        if (currentWeightEl) {
-            currentWeightEl.innerHTML = `${weightData.peso_atual} kg`;
-        }
+        // Mostrar dados de DESEMPENHO sempre que disponíveis (mesmo sem peso)
+        if (weightData && weightData.historico && weightData.historico.length > 0) {
+            // Atualizar peso atual (pode ser null)
+            if (currentWeightEl) {
+                if (weightData.peso_atual) {
+                    currentWeightEl.innerHTML = `${parseFloat(weightData.peso_atual).toFixed(2)} kg`;
+                } else {
+                    currentWeightEl.innerHTML = '--';
+                    if (weightTrendEl) weightTrendEl.innerHTML = 'Peso não cadastrado';
+                }
+            }
 
-        // Verifica se há histórico de desempenho antes de calcular a melhora
-        if (weightData.historico && weightData.historico.length > 0) {
+            // Calcular e mostrar melhora de desempenho
             const melhora = weightData.melhora_desempenho || 0;
             if (performanceGainEl) {
                 performanceGainEl.innerHTML = `${melhora > 0 ? '+' : ''}${melhora.toFixed(2)}`;
@@ -3371,97 +3358,94 @@ window.addEventListener('load', function() {
                 performanceStatusEl.innerHTML = status;
             }
 
-            if (weightTrendEl) {
-                // Pega o primeiro e último registro para mostrar a variação
+            if (weightTrendEl && weightData.peso_atual) {
+                // Só mostra variação de peso se tiver peso
                 const primeiroPeso = weightData.historico[0]?.peso || weightData.peso_atual;
                 const ultimoPeso = weightData.peso_atual;
-                const variacao = ((ultimoPeso - primeiroPeso) / primeiroPeso * 100).toFixed(1);
-                const trendText = primeiroPeso !== ultimoPeso ?
-                    `Variação: ${variacao}%` :
-                    'Sem histórico suficiente';
-
-                weightTrendEl.innerHTML = trendText;
-            }
-        } else {
-            // Caso não haja histórico de desempenho, mas o peso atual exista
-            if (performanceGainEl) {
-                performanceGainEl.innerHTML = '--';
+                if (primeiroPeso && ultimoPeso && primeiroPeso !== ultimoPeso) {
+                    const variacao = ((ultimoPeso - primeiroPeso) / primeiroPeso * 100).toFixed(1);
+                    weightTrendEl.innerHTML = `Variação: ${variacao}%`;
+                } else {
+                    weightTrendEl.innerHTML = 'Sem histórico de peso';
+                }
             }
 
-            if (performanceStatusEl) {
-                performanceStatusEl.innerHTML = 'Sem histórico';
-            }
+            // Renderizar gráfico
+            if (weightData.historico && weightData.historico.length > 0) {
+                const labels = weightData.historico.map(item => {
+                    const date = new Date(item.data + 'T00:00:00');
+                    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                });
+                
+                const pesoData = weightData.historico.map(item => item.peso || null);
+                const desempenhoData = weightData.historico.map(item => item.desempenho_medio);
 
-            if (weightTrendEl) {
-                weightTrendEl.innerHTML = 'Adicione registros para análise';
-            }
-        }
+                const hasAnyWeight = pesoData.some(p => p !== null && p > 0);
 
-        if (weightData.historico && weightData.historico.length > 0) {
-            // Prepara os dados para o gráfico
-            const labels = weightData.historico.map(item => {
-                const date = new Date(item.data);
-                return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-            });
-
-            const pesos = weightData.historico.map(item => item.peso);
-            const desempenhos = weightData.historico.map(item => item.desempenho_medio || 0);
-
-            // Cria o gráfico de linha dupla
-            charts.weightPerformance = new Chart(ctx, {
-                type: 'line',
-                data: {
+                const chartData = {
                     labels: labels,
-                    datasets: [
-                        {
-                            label: 'Peso (kg)',
-                            data: pesos,
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: true,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'Desempenho (0-10)',
-                            data: desempenhos,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderWidth: 2,
-                            tension: 0.3,
-                            borderDash: [5, 5],
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
+                    datasets: []
+                };
+
+                // Dataset de Desempenho (sempre mostrado)
+                chartData.datasets.push({
+                    label: 'Desempenho',
+                    data: desempenhoData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                });
+
+                // Dataset de Peso (só se tiver pelo menos um valor)
+                if (hasAnyWeight) {
+                    chartData.datasets.push({
+                        label: 'Peso (kg)',
+                        data: pesoData,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#f59e0b',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y1'
+                    });
+                }
+
+                const chartOptions = {
                     responsive: true,
                     maintainAspectRatio: false,
                     interaction: {
                         mode: 'index',
-                        intersect: false,
+                        intersect: false
                     },
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20
-                            }
+                            display: true,
+                            position: 'top'
                         },
                         tooltip: {
+                            enabled: true,
                             callbacks: {
-                                label: function (context) {
+                                label: function(context) {
                                     let label = context.dataset.label || '';
                                     if (label) {
                                         label += ': ';
                                     }
                                     if (context.parsed.y !== null) {
-                                        if (context.datasetIndex === 0) {
-                                            label += context.parsed.y.toFixed(1) + ' kg';
-                                        } else {
-                                            label += context.parsed.y.toFixed(1) + ' pts';
+                                        label += context.parsed.y.toFixed(2);
+                                        if (context.datasetIndex === 1) {
+                                            label += ' kg';
                                         }
                                     }
                                     return label;
@@ -3470,50 +3454,77 @@ window.addEventListener('load', function() {
                         }
                     },
                     scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
-                            }
-                        },
                         y: {
                             type: 'linear',
                             display: true,
                             position: 'left',
                             title: {
                                 display: true,
-                                text: 'Peso (kg)'
+                                text: 'Desempenho (0-10)',
+                                color: '#10b981',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
                             },
-                            min: Math.max(0, Math.min(...pesos) - 5),
-                            max: Math.max(...pesos) + 5
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Desempenho (0-10)'
-                            },
-                            min: 0,
-                            max: 10,
                             grid: {
-                                drawOnChartArea: false
+                                color: 'rgba(16, 185, 129, 0.1)'
+                            },
+                            ticks: {
+                                color: '#10b981',
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
                             }
                         }
                     }
+                };
+
+                // Adicionar eixo Y secundário se tiver peso
+                if (hasAnyWeight) {
+                    chartOptions.scales.y1 = {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Peso (kg)',
+                            color: '#f59e0b',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        },
+                        ticks: {
+                            color: '#f59e0b',
+                            callback: function(value) {
+                                return value.toFixed(1);
+                            }
+                        }
+                    };
                 }
-            });
+
+                charts.weightPerformance = new Chart(ctx, {
+                    type: 'line',
+                    data: chartData,
+                    options: chartOptions
+                });
+            }
         } else {
-            // Exibe mensagem quando não há histórico suficiente para o gráfico
+            // Sem dados de desempenho
             container.innerHTML = `
                 <div class="alert alert-info mb-0">
                     <i class="fas fa-info-circle me-2"></i>
-                    Dados históricos insuficientes para exibir o gráfico. O peso atual é ${weightData.peso_atual} kg.
+                    Dados de desempenho não disponíveis. Registre atividades físicas para visualizar esta análise.
                 </div>`;
+
+            if (currentWeightEl) currentWeightEl.innerHTML = weightData?.peso_atual ? `${parseFloat(weightData.peso_atual).toFixed(2)} kg` : '--';
+            if (performanceGainEl) performanceGainEl.innerHTML = '--';
+            if (performanceStatusEl) performanceStatusEl.innerHTML = 'Sem dados';
+            if (weightTrendEl) weightTrendEl.innerHTML = 'Adicione registros de treino';
         }
     }
 

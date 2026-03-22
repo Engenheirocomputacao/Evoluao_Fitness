@@ -54,16 +54,16 @@ def iot_dashboard(request):
     alertas_ativos = AlertManager.get_active_alerts_for_user(individuo, limit=5)
     alertas_criticos = AlertManager.get_critical_alerts_count(individuo)
     
-    # Leituras recentes (últimas 24 horas) - das leituras dos dispositivos do usuário
-    last_24h = timezone.now() - timedelta(hours=24)
+    # Leituras recentes (últimos 7 dias para mostrar mais dados)
+    last_7_days = timezone.now() - timedelta(days=7)
     leituras_recentes = LeituraIoT.objects.filter(
         dispositivo__proprietario=individuo,
-        timestamp__gte=last_24h
-    ).order_by('-timestamp')[:20]
+        timestamp__gte=last_7_days
+    ).order_by('-timestamp')[:50]  # Aumentado para 50 leituras
     
-    # Dados para gráfico (leituras por hora nas últimas 24h)
+    # Dados para gráfico (leituras por hora nas últimas 168h - 7 dias)
     leituras_por_hora = []
-    for i in range(24):
+    for i in range(168):  # 7 dias * 24 horas
         hora_inicio = timezone.now() - timedelta(hours=i+1)
         hora_fim = timezone.now() - timedelta(hours=i)
         count = LeituraIoT.objects.filter(
@@ -72,7 +72,7 @@ def iot_dashboard(request):
             timestamp__lt=hora_fim
         ).count()
         leituras_por_hora.append({
-            'hora': hora_inicio.strftime('%H:00'),
+            'hora': hora_inicio.strftime('%d/%m %H:00'),
             'count': count
         })
     leituras_por_hora.reverse()

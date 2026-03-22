@@ -655,7 +655,11 @@
                             {{ item.rank }}
                         </div>
                         <div class="ranking-info">
-                            {% if item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
+                            {% if item.avatar %}
+                            <div class="ranking-avatar">
+                                <img src="{{ item.avatar }}" alt="Avatar" class="avatar-img">
+                            </div>
+                            {% elif item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
                             <div class="ranking-avatar">
                                 <img src="{{ user.individuo.avatar.url }}" alt="Avatar" class="avatar-img">
                             </div>
@@ -704,7 +708,11 @@
                             {{ item.rank }}
                         </div>
                         <div class="ranking-info">
-                            {% if item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
+                            {% if item.avatar %}
+                            <div class="ranking-avatar">
+                                <img src="{{ item.avatar }}" alt="Avatar" class="avatar-img">
+                            </div>
+                            {% elif item.individuo__nome_completo == individuo.nome_completo and user.individuo.avatar %}
                             <div class="ranking-avatar">
                                 <img src="{{ user.individuo.avatar.url }}" alt="Avatar" class="avatar-img">
                             </div>

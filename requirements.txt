@@ -14,3 +14,6 @@ Pillow>=10.0.0
 
 # Utilitários
 pytz>=2024.1
+
+# HTTP requests
+requests>=2.25.0

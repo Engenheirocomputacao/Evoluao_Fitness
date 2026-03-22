@@ -1,11 +1,14 @@
 """
 Relatórios and ranking views for treinamento app.
 """
+import os
+from pathlib import Path
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Avg, Count, Max, Min
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
 
 from ..models import RegistroTreinamento
 from ..utils import is_admin_user, get_or_create_individuo, calcular_dias_consecutivos
@@ -74,6 +77,12 @@ def ranking_view(request):
     """View para ranking de usuários"""
     individuo = get_or_create_individuo(request.user)
     
+    # Lista de avatares disponíveis
+    avatar_dir = settings.MEDIA_ROOT / 'avatars'
+    available_avatars = []
+    if avatar_dir.exists():
+        available_avatars = [f.name for f in avatar_dir.iterdir() if f.is_file() and f.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif']]
+    
     # Ranking geral
     ranking_geral_qs = RegistroTreinamento.objects.values('individuo__nome_completo').annotate(
         media_geral=Avg('valor_alcançado'),
@@ -87,6 +96,13 @@ def ranking_view(request):
     
     for i, item in enumerate(ranking_geral_qs, 1):
         item['rank'] = i
+        # Adiciona avatar para top 10
+        if i <= 10 and available_avatars:
+            avatar_index = (i - 1) % len(available_avatars)
+            item['avatar'] = f'/media/avatars/{available_avatars[avatar_index]}'
+        else:
+            item['avatar'] = None
+            
         if i <= 10:
             ranking_geral.append(item)
             if item['individuo__nome_completo'] == individuo.nome_completo:
@@ -117,6 +133,13 @@ def ranking_view(request):
     
     for i, item in enumerate(ranking_mensal_qs, 1):
         item['rank'] = i
+        # Adiciona avatar para top 10 mensal
+        if i <= 10 and available_avatars:
+            avatar_index = (i - 1) % len(available_avatars)
+            item['avatar'] = f'/media/avatars/{available_avatars[avatar_index]}'
+        else:
+            item['avatar'] = None
+            
         if i <= 10:
             ranking_mensal.append(item)
             if item['individuo__nome_completo'] == individuo.nome_completo:
