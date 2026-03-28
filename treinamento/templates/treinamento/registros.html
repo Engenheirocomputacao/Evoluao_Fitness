@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load treinamento_tags %}
 
 {% block title %}Registros de Treinamento - {{ individuo.nome_completo }}{% endblock %}
 
@@ -923,7 +924,7 @@
                         </td>
                         <td class="d-none d-md-table-cell">
                             <div class="d-md-none row-label">Duração:</div>
-                            <div class="cell-value">{{ registro.duracao|time:'H:i'|default:"-" }}</div>
+                            <div class="cell-value">{{ registro.duracao|format_duration|default:"-" }}</div>
                         </td>
                         <td class="d-none d-md-table-cell">
                             <div class="d-md-none row-label">Esforço:</div>
@@ -936,7 +937,7 @@
                                     data-treinamento-id="{{ registro.treinamento.id }}"
                                     data-data="{{ registro.data|date:'Y-m-d' }}"
                                     data-valor="{{ registro.valor_alcançado }}"
-                                    data-duracao="{{ registro.duracao|time:'H:i' }}"
+                                    data-duracao="{{ registro.duracao|format_duration }}"
                                     data-esforco="{{ registro.esforco_percebido }}"
                                     data-observacoes="{{ registro.observacoes }}">
                                     <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Editar</span>
