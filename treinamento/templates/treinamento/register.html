@@ -445,6 +445,91 @@
         </div>
 
         <div class="form-group">
+            <label for="cpf" class="form-label">
+                CPF
+            </label>
+            <input type="text" id="cpf" name="cpf" class="form-control"
+                placeholder="XXX.XXX.XXX-XX" maxlength="14"
+                pattern="\d{3}\.?\d{3}\.?\d{3}-?\d{2}" title="Formato: XXX.XXX.XXX-XX">
+        </div>
+
+        <div class="form-group">
+            <label for="telefone" class="form-label">
+                Telefone
+            </label>
+            <input type="text" id="telefone" name="telefone" class="form-control"
+                placeholder="(XX) XXXXX-XXXX" maxlength="20">
+        </div>
+
+        <!-- Endereço Profissional -->
+        <div class="form-group">
+            <label for="endereco_rua" class="form-label">
+                Rua / Avenida
+            </label>
+            <input type="text" id="endereco_rua" name="endereco_rua" class="form-control"
+                placeholder="Nome da rua ou avenida" maxlength="255">
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="endereco_numero" class="form-label">
+                    Número
+                </label>
+                <input type="text" id="endereco_numero" name="endereco_numero" class="form-control"
+                    placeholder="Nº ou S/N" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label for="endereco_complemento" class="form-label">
+                    Complemento
+                </label>
+                <input type="text" id="endereco_complemento" name="endereco_complemento" class="form-control"
+                    placeholder="Apto, Bloco, Sala" maxlength="100">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="endereco_bairro" class="form-label">
+                Bairro
+            </label>
+            <input type="text" id="endereco_bairro" name="endereco_bairro" class="form-control"
+                placeholder="Bairro ou distrito" maxlength="100">
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="endereco_cidade" class="form-label">
+                    Cidade
+                </label>
+                <input type="text" id="endereco_cidade" name="endereco_cidade" class="form-control"
+                    placeholder="Cidade" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label for="endereco_estado" class="form-label">
+                    UF
+                </label>
+                <input type="text" id="endereco_estado" name="endereco_estado" class="form-control"
+                    placeholder="Ex: SP" maxlength="2" style="text-transform: uppercase;">
+            </div>
+        </div>
+
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="endereco_cep" class="form-label">
+                    CEP
+                </label>
+                <input type="text" id="endereco_cep" name="endereco_cep" class="form-control"
+                    placeholder="00000-000" maxlength="9">
+            </div>
+            <div class="form-group">
+                <label for="endereco_pais" class="form-label">
+                    País
+                </label>
+                <input type="text" id="endereco_pais" name="endereco_pais" class="form-control"
+                    placeholder="País" maxlength="50" value="Brasil">
+            </div>
+        </div>
+
+        <div class="form-group">
             <label for="data_nascimento" class="form-label">Data de Nascimento (DD/MM/AAAA)</label>
             <input type="text" id="data_nascimento" name="data_nascimento" class="form-control" placeholder="DD/MM/AAAA"
                 maxlength="10" inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}" title="Formato: DD/MM/AAAA">
@@ -526,6 +611,63 @@
 
 {% block extra_body %}
 <script>
+    // Função para formatar CPF (XXX.XXX.XXX-XX)
+    function formatarCPF(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        
+        // Aplica formato XXX.XXX.XXX-XX
+        if (value.length >= 3) {
+            value = value.substring(0, 3) + '.' + value.substring(3);
+        }
+        if (value.length >= 7) {
+            value = value.substring(0, 7) + '.' + value.substring(7);
+        }
+        if (value.length >= 11) {
+            value = value.substring(0, 11) + '-' + value.substring(11);
+        }
+        
+        input.value = value;
+    }
+
+    // Função para formatar telefone ((XX) XXXXX-XXXX)
+    function formatarTelefone(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        
+        // Aplica formato (XX) XXXXX-XXXX
+        if (value.length >= 2) {
+            value = '(' + value.substring(0, 2) + ') ' + value.substring(2);
+        }
+        if (value.length >= 9) {
+            value = value.substring(0, 9) + '-' + value.substring(9);
+        }
+        
+        input.value = value;
+    }
+
+    // Função para formatar CEP (00000-000)
+    function formatarCEP(input) {
+        let value = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+        
+        if (value.length > 8) {
+            value = value.substring(0, 8);
+        }
+        
+        // Aplica formato 00000-000
+        if (value.length >= 5) {
+            value = value.substring(0, 5) + '-' + value.substring(5);
+        }
+        
+        input.value = value;
+    }
+
     // Função para converter data DD/MM/AAAA para YYYY-MM-DD
     function converterDataParaISO(dataStr) {
         if (!dataStr || dataStr.length !== 10) return null;
@@ -618,6 +760,30 @@
     document.addEventListener('DOMContentLoaded', function () {
         const dataNascInput = document.getElementById('data_nascimento');
         const idadeInput = document.getElementById('idade');
+        const cpfInput = document.getElementById('cpf');
+        const telefoneInput = document.getElementById('telefone');
+        const cepInput = document.getElementById('endereco_cep');
+
+        // Formatação automática do CPF
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function () {
+                formatarCPF(cpfInput);
+            });
+        }
+
+        // Formatação automática do telefone
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function () {
+                formatarTelefone(telefoneInput);
+            });
+        }
+
+        // Formatação automática do CEP
+        if (cepInput) {
+            cepInput.addEventListener('input', function () {
+                formatarCEP(cepInput);
+            });
+        }
 
         // Adiciona formatação para o campo de data
         if (dataNascInput) {

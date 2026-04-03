@@ -11,13 +11,13 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 
 from ..models import Individuo
-from ..forms import SimpleCaptchaLoginForm
+from ..forms import CaptchaLoginForm
 
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
     redirect_authenticated_user = True
-    form_class = SimpleCaptchaLoginForm
+    form_class = CaptchaLoginForm
     
     def get_success_url(self):
         return reverse_lazy('home')
@@ -26,13 +26,32 @@ class CustomLoginView(LoginView):
         messages.error(self.request, 'Usuário, senha ou captcha incorretos.')
         return super().form_invalid(form)
     
-    def form_valid(self, form):
-        # Verifica o CAPTCHA primeiro
-        captcha_verified = form.cleaned_data.get('captcha_verified', False)
-        if not captcha_verified:
-            messages.error(self.request, 'Por favor, confirme que você não é um robô.')
-            return self.form_invalid(form)
+    def get_form_kwargs(self):
+        """Passa o request para o formulário."""
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """Adiciona o captcha ao contexto do template."""
+        context = super().get_context_data(**kwargs)
+        from ..models import LetterCaptcha
         
+        # Garante que a sessão exista
+        if not self.request.session.session_key:
+            self.request.session.create()
+            self.request.session.modified = True
+        
+        # Gera novo captcha para esta sessão
+        session_key = self.request.session.session_key
+        captcha = LetterCaptcha.generate_captcha(session_key)
+        context['captcha'] = captcha
+        context['captcha_letters'] = captcha.letters
+        
+        return context
+
+    def form_valid(self, form):
+        # O captcha já é validado no clean_captcha_solution do formulário
         # Deixa o Django cuidar da autenticação
         return super().form_valid(form)
 
@@ -59,6 +78,16 @@ def register_view(request):
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         nome_completo = request.POST.get('nome_completo')
+        cpf = request.POST.get('cpf')
+        telefone = request.POST.get('telefone')
+        endereco_rua = request.POST.get('endereco_rua')
+        endereco_numero = request.POST.get('endereco_numero')
+        endereco_complemento = request.POST.get('endereco_complemento')
+        endereco_bairro = request.POST.get('endereco_bairro')
+        endereco_cidade = request.POST.get('endereco_cidade')
+        endereco_estado = request.POST.get('endereco_estado')
+        endereco_cep = request.POST.get('endereco_cep')
+        endereco_pais = request.POST.get('endereco_pais')
         data_nascimento = request.POST.get('data_nascimento')
         idade = request.POST.get('idade')
         peso = request.POST.get('peso')
@@ -159,7 +188,17 @@ def register_view(request):
                 data_nascimento=processed_data_nascimento,
                 peso=peso if peso else None,
                 sexo=sexo if sexo else None,
-                observacoes=observacoes if observacoes else ''
+                observacoes=observacoes if observacoes else '',
+                cpf=cpf if cpf else None,
+                telefone=telefone if telefone else None,
+                endereco_rua=endereco_rua if endereco_rua else '',
+                endereco_numero=endereco_numero if endereco_numero else '',
+                endereco_complemento=endereco_complemento if endereco_complemento else '',
+                endereco_bairro=endereco_bairro if endereco_bairro else '',
+                endereco_cidade=endereco_cidade if endereco_cidade else '',
+                endereco_estado=endereco_estado.upper() if endereco_estado else '',
+                endereco_cep=endereco_cep if endereco_cep else '',
+                endereco_pais=endereco_pais if endereco_pais else 'Brasil'
             )
             
             # Se for admin criando outro usuário, não fazer login automaticamente

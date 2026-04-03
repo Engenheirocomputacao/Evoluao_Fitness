@@ -31,6 +31,83 @@ class Individuo(models.Model):
     observacoes = models.TextField(blank=True, max_length=500, help_text="Observações/restrições")
     ativo = models.BooleanField(default=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    
+    # Campos de contato e identificação
+    cpf = models.CharField(
+        max_length=14,
+        null=True,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$',
+                message='CPF deve estar no formato XXX.XXX.XXX-XX ou XXXXXXXXXXX'
+            )
+        ],
+        help_text="CPF no formato XXX.XXX.XXX-XX"
+    )
+    telefone = models.CharField(
+        max_length=20,
+        null=True,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[\d\s\-\(\)\+]+$',
+                message='Telefone deve conter apenas números, espaços, hífens, parênteses e +'
+            )
+        ],
+        help_text="Telefone para contato"
+    )
+    
+    # Campos de endereço profissionais
+    endereco_rua = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Rua/Av",
+        help_text="Nome da rua ou avenida"
+    )
+    endereco_numero = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="Número",
+        help_text="Número da residência (ou 'S/N' para sem número)"
+    )
+    endereco_complemento = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Complemento",
+        help_text="Apartamento, bloco, sala, etc."
+    )
+    endereco_bairro = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Bairro",
+        help_text="Bairro ou distrito"
+    )
+    endereco_cidade = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Cidade",
+        help_text="Cidade"
+    )
+    endereco_estado = models.CharField(
+        max_length=2,
+        blank=True,
+        verbose_name="UF",
+        help_text="Estado (sigla, ex: SP, RJ, MG)"
+    )
+    endereco_cep = models.CharField(
+        max_length=9,
+        blank=True,
+        verbose_name="CEP",
+        help_text="CEP no formato 00000-000"
+    )
+    endereco_pais = models.CharField(
+        max_length=50,
+        blank=True,
+        default='Brasil',
+        verbose_name="País",
+        help_text="País"
+    )
 
     def __str__(self):
         return self.nome_completo
@@ -187,8 +264,8 @@ class LetterCaptcha(models.Model):
         available_letters = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
         letters = ''.join(random.choice(available_letters) for _ in range(6))
         
-        # Remove captchas antigos
-        cls.objects.filter(session_key=session_key, is_solved=False).delete()
+        # Remove TODOS os captchas antigos desta sessão (resolvidos ou não)
+        cls.objects.filter(session_key=session_key).delete()
         
         return cls.objects.create(
             session_key=session_key,

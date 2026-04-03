@@ -4,6 +4,7 @@ Tests for treinamento views.
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from ..models import Individuo, Treinamento, RegistroTreinamento
 
@@ -192,3 +193,38 @@ class RelatoriosViewsTest(TestCase):
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(reverse('ranking_view'))
         self.assertEqual(response.status_code, 200)
+
+    def test_ranking_uses_individuo_avatar(self):
+        """Test that ranking view uses the individuo.avatar URL instead of unrelated avatars."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        # Usuário atual
+        self.client.login(username='testuser', password='testpass123')
+
+        # Outro usuário com avatar específico
+        user2 = User.objects.create_user(username='maria', password='pass123')
+        avatar_file = SimpleUploadedFile('maria.jpg', b'content', content_type='image/jpeg')
+        individuo2 = Individuo.objects.create(user=user2, nome_completo='Maria Silva', avatar=avatar_file)
+
+        # Cria um treinamento e registros suficientes para entrar no ranking
+        treinamento = Treinamento.objects.create(nome='TreinoX', unidade_medida='min')
+        now = timezone.now().date()
+        RegistroTreinamento.objects.create(individuo=self.individuo, treinamento=treinamento, data=now, valor_alcançado=10)
+        RegistroTreinamento.objects.create(individuo=self.individuo, treinamento=treinamento, data=now, valor_alcançado=20)
+        RegistroTreinamento.objects.create(individuo=self.individuo, treinamento=treinamento, data=now, valor_alcançado=30)
+        RegistroTreinamento.objects.create(individuo=self.individuo, treinamento=treinamento, data=now, valor_alcançado=40)
+        RegistroTreinamento.objects.create(individuo=self.individuo, treinamento=treinamento, data=now, valor_alcançado=50)
+
+        RegistroTreinamento.objects.create(individuo=individuo2, treinamento=treinamento, data=now, valor_alcançado=100)
+        RegistroTreinamento.objects.create(individuo=individuo2, treinamento=treinamento, data=now, valor_alcançado=100)
+        RegistroTreinamento.objects.create(individuo=individuo2, treinamento=treinamento, data=now, valor_alcançado=100)
+        RegistroTreinamento.objects.create(individuo=individuo2, treinamento=treinamento, data=now, valor_alcançado=100)
+        RegistroTreinamento.objects.create(individuo=individuo2, treinamento=treinamento, data=now, valor_alcançado=100)
+
+        response = self.client.get(reverse('ranking_view'))
+        self.assertEqual(response.status_code, 200)
+
+        ranking_geral = response.context['ranking_geral']
+        found = next((item for item in ranking_geral if item['individuo__nome_completo'] == 'Maria Silva'), None)
+        self.assertIsNotNone(found)
+        self.assertEqual(found['avatar'], individuo2.avatar.url)

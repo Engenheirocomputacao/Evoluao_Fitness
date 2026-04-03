@@ -350,6 +350,7 @@ class CaptchaLoginForm(forms.Form):
         # Remove parâmetros extras que o LoginView envia
         self.request = kwargs.pop('request', None)
         self.session_key = kwargs.pop('session_key', None)
+        self.user_cache = None
 
         # Se não veio session_key explícita, usa a sessão atual (se houver request)
         if self.session_key is None and self.request is not None:
@@ -359,9 +360,25 @@ class CaptchaLoginForm(forms.Form):
 
         super().__init__(*args, **kwargs)
     
-    def clean_captcha_solution(self):
-        solution = self.cleaned_data.get('captcha_solution')
-        if not solution:
+    def clean(self):
+        cleaned_data = super().clean()
+        username = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+        
+        if username and password:
+            from django.contrib.auth import authenticate
+            self.user_cache = authenticate(username=username, password=password)
+            if self.user_cache is None:
+                raise ValidationError('Usuário ou senha incorretos.')
+        
+        return cleaned_data
+    
+    def get_user(self):
+        return self.user_cache
+    
+    def clean_captcha_text(self):
+        user_input = self.cleaned_data.get('captcha_text')
+        if not user_input:
             raise ValidationError('Por favor, digite as letras do captcha.')
         
         # Busca o captcha para esta sessão
@@ -374,11 +391,11 @@ class CaptchaLoginForm(forms.Form):
             raise ValidationError('Sessão de captcha inválida ou expirada.')
         
         # Verifica se a solução está correta
-        if not captcha.verify_solution(solution):
+        if not captcha.verify_solution(user_input):
             raise ValidationError('Captcha incorreto.')
         
         # Marca como resolvido
         captcha.is_solved = True
         captcha.save()
         
-        return solution
+        return user_input

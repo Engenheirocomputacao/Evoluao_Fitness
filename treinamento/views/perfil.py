@@ -126,6 +126,16 @@ def perfil_view(request):
         individuo.peso = novo_peso or None
         individuo.sexo = request.POST.get('sexo') or None
         individuo.observacoes = request.POST.get('observacoes') or ''
+        individuo.cpf = request.POST.get('cpf') or None
+        individuo.telefone = request.POST.get('telefone') or None
+        individuo.endereco_rua = request.POST.get('endereco_rua') or ''
+        individuo.endereco_numero = request.POST.get('endereco_numero') or ''
+        individuo.endereco_complemento = request.POST.get('endereco_complemento') or ''
+        individuo.endereco_bairro = request.POST.get('endereco_bairro') or ''
+        individuo.endereco_cidade = request.POST.get('endereco_cidade') or ''
+        individuo.endereco_estado = request.POST.get('endereco_estado', '').upper() or ''
+        individuo.endereco_cep = request.POST.get('endereco_cep') or ''
+        individuo.endereco_pais = request.POST.get('endereco_pais') or 'Brasil'
         individuo.save()
         messages.success(request, 'Perfil atualizado com sucesso!')
         return redirect('perfil_view')

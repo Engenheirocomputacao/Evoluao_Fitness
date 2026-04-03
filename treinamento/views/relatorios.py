@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
 
-from ..models import RegistroTreinamento
+from ..models import RegistroTreinamento, Individuo
 from ..utils import is_admin_user, get_or_create_individuo, calcular_dias_consecutivos
 
 
@@ -76,82 +76,69 @@ def relatorios_view(request):
 def ranking_view(request):
     """View para ranking de usuários"""
     individuo = get_or_create_individuo(request.user)
-    
-    # Lista de avatares disponíveis
-    avatar_dir = settings.MEDIA_ROOT / 'avatars'
-    available_avatars = []
-    if avatar_dir.exists():
-        available_avatars = [f.name for f in avatar_dir.iterdir() if f.is_file() and f.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif']]
-    
-    # Ranking geral
-    ranking_geral_qs = RegistroTreinamento.objects.values('individuo__nome_completo').annotate(
+
+    # Ranking geral com avatar correto por indivíduo
+    ranking_geral_qs = RegistroTreinamento.objects.values('individuo__id', 'individuo__nome_completo').annotate(
         media_geral=Avg('valor_alcançado'),
         total_registros=Count('id')
     ).filter(total_registros__gte=5).order_by('-media_geral')
-    
-    # Processa ranking geral para lista com posição
+
     ranking_geral = []
     user_in_top_10 = False
     user_rank_data = None
-    
+
+    # Busca avatars já do banco para evitar ordem randômica
+    individuo_ids_geral = [item['individuo__id'] for item in ranking_geral_qs]
+    individuos_geral = {i.id: i.avatar.url if i.avatar else None for i in Individuo.objects.filter(id__in=individuo_ids_geral)}
+
     for i, item in enumerate(ranking_geral_qs, 1):
         item['rank'] = i
-        # Adiciona avatar para top 10
-        if i <= 10 and available_avatars:
-            avatar_index = (i - 1) % len(available_avatars)
-            item['avatar'] = f'/media/avatars/{available_avatars[avatar_index]}'
-        else:
-            item['avatar'] = None
-            
+        item['avatar'] = individuos_geral.get(item['individuo__id'])
+
         if i <= 10:
             ranking_geral.append(item)
             if item['individuo__nome_completo'] == individuo.nome_completo:
                 user_in_top_10 = True
-        
+
         if item['individuo__nome_completo'] == individuo.nome_completo:
             user_rank_data = item
-            
-    # Se usuário não estiver no top 10, adiciona ele no final
+
     if user_rank_data and not user_in_top_10:
         ranking_geral.append(user_rank_data)
-        
+
     posicao_usuario = user_rank_data['rank'] if user_rank_data else None
 
-    # Ranking mensal
+    # Ranking mensal com avatar correto por indivíduo
     data_inicio_mensal = timezone.now() - timedelta(days=30)
     ranking_mensal_qs = RegistroTreinamento.objects.filter(
         data__gte=data_inicio_mensal
-    ).values('individuo__nome_completo').annotate(
+    ).values('individuo__id', 'individuo__nome_completo').annotate(
         media_mensal=Avg('valor_alcançado'),
         total_registros=Count('id')
     ).filter(total_registros__gte=3).order_by('-media_mensal')
-    
-    # Processa ranking mensal para lista com posição
+
     ranking_mensal = []
     user_in_top_10_monthly = False
     user_rank_monthly_data = None
-    
+
+    individuo_ids_mensal = [item['individuo__id'] for item in ranking_mensal_qs]
+    individuos_mensal = {i.id: i.avatar.url if i.avatar else None for i in Individuo.objects.filter(id__in=individuo_ids_mensal)}
+
     for i, item in enumerate(ranking_mensal_qs, 1):
         item['rank'] = i
-        # Adiciona avatar para top 10 mensal
-        if i <= 10 and available_avatars:
-            avatar_index = (i - 1) % len(available_avatars)
-            item['avatar'] = f'/media/avatars/{available_avatars[avatar_index]}'
-        else:
-            item['avatar'] = None
-            
+        item['avatar'] = individuos_mensal.get(item['individuo__id'])
+
         if i <= 10:
             ranking_mensal.append(item)
             if item['individuo__nome_completo'] == individuo.nome_completo:
                 user_in_top_10_monthly = True
-        
+
         if item['individuo__nome_completo'] == individuo.nome_completo:
             user_rank_monthly_data = item
-            
-    # Se usuário não estiver no top 10, adiciona ele no final
+
     if user_rank_monthly_data and not user_in_top_10_monthly:
         ranking_mensal.append(user_rank_monthly_data)
-    
+
     context = {
         'individuo': individuo,
         'ranking_geral': ranking_geral,
