@@ -739,47 +739,146 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 {{ coordenadas_mapa|json_script:"coordenadas-data" }}
+<div id="map-controls" style="margin-bottom: 10px;">
+    <label style="margin-right: 15px;">
+        <input type="radio" name="routeMode" value="none" checked> Apenas pontos
+    </label>
+    <label style="margin-right: 15px;">
+        <input type="radio" name="routeMode" value="straight"> Linha reta
+    </label>
+    <label>
+        <input type="radio" name="routeMode" value="osrm"> Rota real (ruas)
+    </label>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Obter coordenadas do elemento script
+        let coordenadas = [];
         const coordenadasElement = document.getElementById('coordenadas-data');
-        const coordenadas = coordenadasElement ? JSON.parse(coordenadasElement.textContent) : [];
         
-        if (coordenadas && coordenadas.length > 0) {
-            // Inicializar o mapa
-            const map = L.map('map').setView([coordenadas[0].lat, coordenadas[0].lng], 13);
-            
-            // Adicionar camada do OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            // Adicionar marcadores para cada coordenada
-            coordenadas.forEach(function(coord, index) {
-                const marker = L.marker([coord.lat, coord.lng]).addTo(map);
-                
-                // Adicionar popup com informações da leitura
-                marker.bindPopup(`<b>Ponto ${index + 1}</b><br>
-                    Distância: ${coord.distancia} km<br>
-                    Velocidade: ${coord.speed} km/h<br>
-                    Altitude: ${coord.altitude} m<br>
-                    Data/Hora: ${new Date(coord.timestamp).toLocaleString('pt-BR')}<br>`);
-                
-                // Adicionar evento de clique para mostrar mais informações
-                marker.on('click', function(e) {
-                    console.log('Coordenada clicada:', coord);
-                });
-            });
-            
-            // Traçar rota entre os pontos
-            if (coordenadas.length > 1) {
-                const latlngs = coordenadas.map(coord => [coord.lat, coord.lng]);
-                const polyline = L.polyline(latlngs, {color: '#3498db', weight: 3}).addTo(map);
-                
-                // Ajustar a visualização para mostrar toda a rota
-                map.fitBounds(polyline.getBounds());
+        if (coordenadasElement) {
+            try {
+                coordenadas = JSON.parse(coordenadasElement.textContent);
+            } catch (e) {
+                console.error('Erro ao parsear coordenadas:', e);
+                return;
             }
         }
+        
+        const mapContainer = document.getElementById('map');
+        if (!coordenadas.length || !mapContainer) return;
+        
+        // Inicializar mapa
+        const map = L.map('map').setView([coordenadas[0].lat, coordenadas[0].lng], 15);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Adicionar marcadores
+        const markers = [];
+        coordenadas.forEach(function(coord, index) {
+            const marker = L.marker([coord.lat, coord.lng]).addTo(map);
+            marker.bindPopup('<b>Ponto ' + (index + 1) + '</b><br>' +
+                'Distância: ' + coord.distancia + ' km<br>' +
+                'Velocidade: ' + coord.speed + ' km/h<br>' +
+                'Altitude: ' + coord.altitude + ' m');
+            markers.push(marker);
+        });
+        
+        // Abrir popup do primeiro
+        if (markers.length) markers[0].openPopup();
+        
+        // Ajustar visualização para mostrar todos os pontos
+        if (coordenadas.length > 1) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+        
+        let currentRoute = null;
+        let routeSegments = [];
+        
+        // Função para limpar rotas
+        function clearRoute() {
+            if (currentRoute) {
+                map.removeLayer(currentRoute);
+                currentRoute = null;
+            }
+            routeSegments.forEach(function(seg) {
+                map.removeLayer(seg);
+            });
+            routeSegments = [];
+        }
+        
+        // Função para desenhar linha reta
+        function drawStraightLine() {
+            clearRoute();
+            const latlngs = coordenadas.map(function(c) { return [c.lat, c.lng]; });
+            currentRoute = L.polyline(latlngs, {color: '#3498db', weight: 3, opacity: 0.7}).addTo(map);
+        }
+        
+        // Função para buscar rota real via OSRM
+        async function drawRealRoute() {
+            clearRoute();
+            
+            if (coordenadas.length < 2) return;
+            
+            // Simplificar: usar no máximo 25 pontos para evitar rate limiting
+            const step = Math.ceil(coordenadas.length / 25);
+            const simplifiedCoords = [];
+            for (let i = 0; i < coordenadas.length; i += step) {
+                simplifiedCoords.push(coordenadas[i]);
+            }
+            // Garantir que o último ponto está incluído
+            if (simplifiedCoords[simplifiedCoords.length - 1] !== coordenadas[coordenadas.length - 1]) {
+                simplifiedCoords.push(coordenadas[coordenadas.length - 1]);
+            }
+            
+            // Construir URL para OSRM
+            const coordsStr = simplifiedCoords.map(function(c) { 
+                return c.lng + ',' + c.lat; 
+            }).join(';');
+            
+            const url = 'https://router.project-osrm.org/route/v1/foot/' + coordsStr + 
+                       '?overview=full&geometries=geojson';
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('OSRM error');
+                const data = await response.json();
+                
+                if (data.routes && data.routes[0]) {
+                    const routeCoords = data.routes[0].geometry.coordinates.map(function(c) {
+                        return [c[1], c[0]];  // GeoJSON é [lng, lat], Leaflet quer [lat, lng]
+                    });
+                    
+                    currentRoute = L.polyline(routeCoords, {
+                        color: '#e74c3c', 
+                        weight: 4, 
+                        opacity: 0.8
+                    }).addTo(map);
+                    
+                    map.fitBounds(currentRoute.getBounds());
+                }
+            } catch (e) {
+                console.warn('OSRM falhou, usando linha reta:', e);
+                // Fallback para linha reta
+                drawStraightLine();
+            }
+        }
+        
+        // Event listeners para os botões de rádio
+        document.querySelectorAll('input[name="routeMode"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const mode = this.value;
+                if (mode === 'none') {
+                    clearRoute();
+                } else if (mode === 'straight') {
+                    drawStraightLine();
+                } else if (mode === 'osrm') {
+                    drawRealRoute();
+                }
+            });
+        });
     });
 </script>
 {% endif %}

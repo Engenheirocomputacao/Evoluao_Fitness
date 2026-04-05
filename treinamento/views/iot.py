@@ -174,23 +174,22 @@ def device_detail(request, device_id):
         # Pegar todas as leituras com coordenadas e ordenar por timestamp
         leituras_gps = dispositivo.leituras.filter(
             metadata__isnull=False
-        ).exclude(
-            metadata__latitude__isnull=True,
-            metadata__longitude__isnull=True
         ).order_by('timestamp')
         
         coordenadas_mapa = [
             {
-                'lat': leitura.metadata['latitude'],
-                'lng': leitura.metadata['longitude'],
-                'timestamp': leitura.timestamp.isoformat(),
-                'distancia': float(leitura.valor),
-                'speed': leitura.metadata.get('speed', 0),
-                'altitude': leitura.metadata.get('altitude', 0),
+                'lat': leitura.metadata.get('latitude'),
+                'lng': leitura.metadata.get('longitude'),
+                'timestamp': leitura.timestamp.isoformat() if leitura.timestamp else None,
+                'distancia': float(leitura.valor) if leitura.valor else 0,
+                'speed': leitura.metadata.get('speed', 0) if leitura.metadata else 0,
+                'altitude': leitura.metadata.get('altitude', 0) if leitura.metadata else 0,
             }
             for leitura in leituras_gps
-            if leitura.metadata and isinstance(leitura.metadata, dict)
-            and 'latitude' in leitura.metadata and 'longitude' in leitura.metadata
+            if leitura.metadata 
+            and isinstance(leitura.metadata, dict)
+            and leitura.metadata.get('latitude') is not None 
+            and leitura.metadata.get('longitude') is not None
         ]
     
     context = {
