@@ -160,54 +160,130 @@
     }
 
     .btn-secondary:hover {
-        background: #475569;
-        transform: translateY(-2px);
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 2rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .help-text {
-        font-size: 0.875rem;
-        color: #64748b;
-        margin-top: 0.25rem;
-    }
-
-    .errorlist {
-        color: #ef4444;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-    }
-
-    .errorlist li {
-        list-style: none;
-    }
-
-    @media (max-width: 768px) {
-        .create-container {
-            margin: 1rem auto;
-            padding: 0 0.5rem;
+            background: #475569;
+            transform: translateY(-2px);
         }
-        
-        .form-card {
-            padding: 1.5rem;
+
+        /* High Contrast Mode - IoT Device Create/Edit */
+        .high-contrast .form-card {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffffff !important;
         }
-        
+
+        .high-contrast .form-header h1,
+        .high-contrast .section-title,
+        .high-contrast .form-label,
+        .high-contrast strong {
+            color: #ffff00 !important;
+        }
+
+        .high-contrast .form-header p,
+        .high-contrast .help-text {
+            color: #ffffff !important;
+        }
+
+        .high-contrast .section-title {
+            border-bottom-color: #ffff00 !important;
+        }
+
+        .high-contrast .form-control,
+        .high-contrast .form-select {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            border: 2px solid #ffff00 !important;
+        }
+
+        .high-contrast .form-control:focus,
+        .high-contrast .form-select:focus {
+            border-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(255, 255, 0, 0.3) !important;
+        }
+
+        .high-contrast .btn-primary {
+            background: #ffff00 !important;
+            color: #000000 !important;
+            border: 2px solid #000000 !important;
+        }
+
+        .high-contrast .btn-primary:hover {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .high-contrast .btn-secondary {
+            background: #000000 !important;
+            color: #ffff00 !important;
+            border: 2px solid #ffff00 !important;
+        }
+
+        .high-contrast .btn-secondary:hover {
+            background: #333333 !important;
+            color: #ffffff !important;
+        }
+
+        .high-contrast .form-actions {
+            border-top-color: #ffff00 !important;
+        }
+
+        .high-contrast .errorlist {
+            color: #ff0000 !important;
+            font-weight: bold;
+        }
+
+        .high-contrast .form-check-input {
+            accent-color: #ffff00 !important;
+            outline: 2px solid #ffff00 !important;
+        }
+
+        .high-contrast i {
+            color: #ffff00 !important;
+        }
+
+        @media (max-width: 768px) {
+            .create-container {
+                margin: 1rem auto;
+                padding: 0 0.5rem;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn-primary, .btn-secondary {
+                width: 100%;
+            }
+        }
+
         .form-actions {
-            flex-direction: column;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
         }
-        
-        .btn-primary, .btn-secondary {
-            width: 100%;
+
+        .help-text {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
         }
-    }
-</style>
+
+        .errorlist {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .errorlist li {
+            list-style: none;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}

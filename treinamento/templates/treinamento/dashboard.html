@@ -2086,6 +2086,26 @@ window.addEventListener('load', function() {
         border-color: #000000 !important;
     }
 
+    .high-contrast .dashboard-header .feature-card {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .dashboard-header .feature-title {
+        color: #ffff00 !important;
+        text-shadow: none !important;
+    }
+
+    .high-contrast .dashboard-header .feature-description {
+        color: #ffffff !important;
+        text-shadow: none !important;
+    }
+
+    .high-contrast .dashboard-header .feature-icon.dashboard {
+        background: #ffff00 !important;
+        color: #000000 !important;
+    }
+
     .high-contrast .kpi-card {
         background: #000000 !important;
         border: 2px solid #ffff00 !important;
@@ -2211,6 +2231,25 @@ window.addEventListener('load', function() {
         color: #ffff00 !important;
     }
 
+    .high-contrast .intensity-cross-distribution {
+        background: #000 !important;
+        border: 1px solid #ffff00 !important;
+    }
+
+    .high-contrast .intensity-cross-distribution h4 {
+        color: #ffff00 !important;
+    }
+
+    /* Elementos dinâmicos dentro da distribuição por tipo */
+    .high-contrast .intensity-cross-distribution div[style*="background"] {
+        background: #333 !important;
+        border: 1px solid #ffff00 !important;
+    }
+
+    .high-contrast .intensity-cross-distribution div[style*="color"] {
+        color: #ffff00 !important;
+    }
+
     .high-contrast .advanced-analytics {
         background: #000000 !important;
         border: 2px solid #ffff00 !important;
@@ -2225,6 +2264,37 @@ window.addEventListener('load', function() {
     .high-contrast .advanced-analytics h2 {
         color: #ffff00 !important;
         text-shadow: none !important;
+    }
+
+    /* Estilos para Insights e Métricas na Análise Avançada */
+    .high-contrast div[style*="background: #f9fafb"],
+    .high-contrast div[style*="background: #f0fdf4"],
+    .high-contrast div[style*="background: #fef3c7"],
+    .high-contrast #rankingChartContainer div[style*="background: #e5e7eb"] {
+        background: #333333 !important;
+        border: 1px solid #ffff00 !important;
+    }
+
+    .high-contrast #effortInsight,
+    .high-contrast #bestROI,
+    .high-contrast #bestSport,
+    .high-contrast #peerStatus,
+    .high-contrast #peerDetail,
+    .high-contrast #currentWeight,
+    .high-contrast #weightTrend,
+    .high-contrast #performanceGain,
+    .high-contrast #performanceStatus {
+        color: #ffffff !important;
+    }
+
+    .high-contrast #percentilValue {
+        background: none !important;
+        -webkit-text-fill-color: #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast #percentilBar {
+        background: #ffff00 !important;
     }
 
     .high-contrast .metric-card {
@@ -2255,6 +2325,32 @@ window.addEventListener('load', function() {
         color: #ff0000 !important;
     }
 
+    .high-contrast .status-badge {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .status-excellent {
+        border-color: #00ff00 !important;
+        color: #00ff00 !important;
+    }
+
+    .high-contrast .status-good {
+        border-color: #00ffff !important;
+        color: #00ffff !important;
+    }
+
+    .high-contrast .status-average {
+        border-color: #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .status-poor {
+        border-color: #ff0000 !important;
+        color: #ff0000 !important;
+    }
+
     /* Canvas charts high contrast */
     .high-contrast canvas {
         filter: contrast(1.2) brightness(1.1);
@@ -2271,6 +2367,10 @@ window.addEventListener('load', function() {
 
     .high-contrast .small {
         color: #cccccc !important;
+    }
+
+    .high-contrast strong {
+        color: #ffff00 !important;
     }
 </style>
 {% endblock %}

@@ -239,9 +239,40 @@
 }
 
 /* High Contrast Mode Fixes for Reports Page */
+.high-contrast .page-header {
+    background-color: #000 !important;
+    border: 2px solid #ffff00 !important;
+}
+
+.high-contrast .page-title,
+.high-contrast .page-title i {
+    color: #ffff00 !important;
+    text-shadow: none !important;
+}
+
+.high-contrast .page-subtitle {
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+.high-contrast .btn-back {
+    background-color: #000 !important;
+    border: 2px solid #ffff00 !important;
+    color: #ffff00 !important;
+}
+
+.high-contrast .btn-back:hover {
+    background-color: #ffff00 !important;
+    color: #000 !important;
+}
+
+.high-contrast .btn-back:hover i {
+    color: #000 !important;
+}
+
 .high-contrast .report-section {
     background-color: #000 !important;
-    border: 2px solid #fff !important;
+    border: 2px solid #ffff00 !important;
     color: #fff !important;
 }
 
@@ -252,7 +283,7 @@
 .high-contrast .training-stats-table th {
     background-color: #000 !important;
     color: #ffff00 !important;
-    border-bottom: 2px solid #fff !important;
+    border-bottom: 2px solid #ffff00 !important;
 }
 
 .high-contrast .training-stats-table td {
@@ -260,21 +291,21 @@
     color: #fff !important;
 }
 
+.high-contrast .training-stats-table td strong {
+    color: #ffff00 !important;
+}
+
 .high-contrast .training-stats-table tr {
     background-color: #000 !important;
 }
 
 .high-contrast .training-stats-table tr:hover {
-    background-color: #111 !important;
-}
-
-.high-contrast .training-stats-table tr:nth-child(even) {
-    background-color: #111 !important;
+    background-color: #222 !important;
 }
 
 .high-contrast .stat-card {
     background-color: #000 !important;
-    border: 2px solid #fff !important;
+    border: 2px solid #ffff00 !important;
 }
 
 .high-contrast .stat-number {
@@ -282,12 +313,12 @@
 }
 
 .high-contrast .stat-label {
-    color: #ddd !important;
+    color: #fff !important;
 }
 
 .high-contrast .progress-bar {
     background-color: #333 !important;
-    border: 1px solid #fff !important;
+    border: 1px solid #ffff00 !important;
 }
 
 .high-contrast .progress-fill {
@@ -300,6 +331,10 @@
 
 .high-contrast .empty-state {
     color: #fff !important;
+}
+
+.high-contrast .empty-state h4 {
+    color: #ffff00 !important;
 }
 
 .high-contrast .empty-state-icon {

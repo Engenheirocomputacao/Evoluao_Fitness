@@ -377,6 +377,130 @@
             font-size: 20px;
         }
     }
+
+    /* High Contrast Mode - Register Page */
+    .high-contrast .register-container {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffffff !important;
+    }
+
+    .high-contrast .register-title,
+    .high-contrast .form-label,
+    .high-contrast .puzzle-header {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .required {
+        color: #ff0000 !important;
+        font-weight: bold;
+    }
+
+    .high-contrast .form-control {
+        background: #000000 !important;
+        color: #ffffff !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .form-control:focus {
+        border-color: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(255, 255, 0, 0.3) !important;
+    }
+
+    .high-contrast .btn-register {
+        background: #ffff00 !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+    }
+
+    .high-contrast .btn-register:hover {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .high-contrast .login-link,
+    .high-contrast .login-link a {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .login-link a:hover {
+        color: #ffffff !important;
+    }
+
+    .high-contrast .toggle-password {
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .toggle-password:hover {
+        background-color: #333333 !important;
+    }
+
+    /* CAPTCHA High Contrast */
+    .high-contrast .puzzle-captcha-container {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+    }
+
+    .high-contrast .puzzle-canvas-container {
+        background: #222222 !important;
+        border: 1px solid #ffff00 !important;
+    }
+
+    .high-contrast .puzzle-target {
+        border: 2px dashed #ffff00 !important;
+        background: rgba(255, 255, 0, 0.2) !important;
+    }
+
+    .high-contrast .puzzle-piece {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .slider-track {
+        background: #222222 !important;
+        border: 1px solid #ffff00 !important;
+    }
+
+    .high-contrast .slider-fill {
+        background: #ffff00 !important;
+    }
+
+    .high-contrast .slider-button {
+        background: #000000 !important;
+        border: 2px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
+
+    .high-contrast .slider-button.success,
+    .high-contrast .puzzle-piece.correct,
+    .high-contrast .slider-fill.success {
+        background: #00ff00 !important;
+        color: #000000 !important;
+        border-color: #000000 !important;
+    }
+
+    .high-contrast .slider-button.error,
+    .high-contrast .puzzle-piece.incorrect,
+    .high-contrast .slider-fill.error {
+        background: #ff0000 !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+    }
+
+    .high-contrast .captcha-status.success {
+        color: #00ff00 !important;
+    }
+
+    .high-contrast .captcha-status.error {
+        color: #ff0000 !important;
+    }
+
+    .high-contrast .reset-button {
+        background: #333333 !important;
+        border: 1px solid #ffff00 !important;
+        color: #ffff00 !important;
+    }
 </style>
 {% endblock %}
 

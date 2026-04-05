@@ -31,12 +31,74 @@
         z-index: 1;
     }
 
+    .hero-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        width: 100%;
+        margin-bottom: 2rem;
+        gap: 2rem;
+    }
+
+    .brand-container {
+        text-align: left;
+    }
+
+    .brand-name {
+        color: #fbff00;
+        font-size: 2.4rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin-bottom: 0.2rem;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.6);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
     .hero-title {
-        font-size: 3.5rem;
+        font-size: 2.8rem;
         font-weight: 800;
+        margin-top: 0;
         margin-bottom: 1rem;
         color: white;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        opacity: 0.9;
+    }
+
+    @media (max-width: 992px) {
+        .brand-name {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+        .hero-title {
+            font-size: 2.2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        .brand-container {
+            text-align: center;
+        }
+        .brand-name {
+            font-size: 1.5rem;
+            justify-content: center;
+            letter-spacing: 2px;
+        }
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        .user-welcome {
+            margin-left: 0 !important;
+            align-self: center !important;
+        }
     }
 
     .hero-subtitle {
@@ -590,12 +652,6 @@
             font-size: 0.5rem;
         }
 
-            .hero-title {
-                font-size: 2rem;
-                word-break: break-word;
-                overflow-wrap: break-word;
-                line-height: 1.1;
-            }
             .hero-section {
                 padding: 2rem 0.5rem;
             }
@@ -693,6 +749,21 @@
             background: rgba(0, 0, 0, 0.8) !important;
         }
         
+        .high-contrast .social-footer h3 {
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .social-icon {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+        
+        .high-contrast .social-icon:hover {
+            background: #ffff00 !important;
+            color: #000000 !important;
+        }
+        
         .high-contrast .btn-outline-light {
             background: #ffff00 !important;
             color: #000000 !important;
@@ -710,8 +781,13 @@
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-            <h1 class="hero-title">Bem-vindo ao seu Controle de Treinamento</h1>
+        <div class="hero-header">
+            <div class="brand-container">
+                <h2 class="brand-name">
+                    <i class="fas fa-dumbbell"></i> Evolução Fitness
+                </h2>
+                <h1 class="hero-title">Bem-vindo ao seu Controle de Treinamento</h1>
+            </div>
             {% if user.is_authenticated %}
             <div class="user-welcome"
                 style="background: transparent; padding: 1rem 2rem; border-radius: 50px; border: 1px solid transparent; margin-left: 2rem; align-self: flex-start; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
