@@ -176,21 +176,38 @@ def device_detail(request, device_id):
             metadata__isnull=False
         ).order_by('timestamp')
         
-        coordenadas_mapa = [
-            {
-                'lat': leitura.metadata.get('latitude'),
-                'lng': leitura.metadata.get('longitude'),
-                'timestamp': leitura.timestamp.isoformat() if leitura.timestamp else None,
-                'distancia': float(leitura.valor) if leitura.valor else 0,
-                'speed': leitura.metadata.get('speed', 0) if leitura.metadata else 0,
-                'altitude': leitura.metadata.get('altitude', 0) if leitura.metadata else 0,
-            }
-            for leitura in leituras_gps
-            if leitura.metadata 
-            and isinstance(leitura.metadata, dict)
-            and leitura.metadata.get('latitude') is not None 
-            and leitura.metadata.get('longitude') is not None
-        ]
+        for leitura in leituras_gps:
+            if not leitura.metadata or not isinstance(leitura.metadata, dict):
+                continue
+            
+            # Tenta extrair coordenadas de diferentes estruturas
+            lat = None
+            lng = None
+            
+            # Estrutura 1: coordenadas diretamente no metadata
+            if 'latitude' in leitura.metadata and 'longitude' in leitura.metadata:
+                lat = leitura.metadata.get('latitude')
+                lng = leitura.metadata.get('longitude')
+            
+            # Estrutura 2: coordenadas dentro de gps_coordinates
+            elif 'gps_coordinates' in leitura.metadata:
+                gps_coords = leitura.metadata.get('gps_coordinates', {})
+                if isinstance(gps_coords, dict):
+                    lat = gps_coords.get('latitude')
+                    lng = gps_coords.get('longitude')
+            
+            # Se encontrou coordenadas, adiciona à lista
+            if lat is not None and lng is not None:
+                coordenadas_mapa.append({
+                    'lat': lat,
+                    'lng': lng,
+                    'timestamp': leitura.timestamp.isoformat() if leitura.timestamp else None,
+                    'distancia': float(leitura.valor) if leitura.valor else 0,
+                    'speed': leitura.metadata.get('speed', 0) if leitura.metadata else 0,
+                    'altitude': leitura.metadata.get('altitude', 0) if leitura.metadata else 0,
+                    'location': leitura.metadata.get('location', {}),
+                    'route_name': leitura.metadata.get('route_name', ''),
+                })
     
     context = {
         'dispositivo': dispositivo,

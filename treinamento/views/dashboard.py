@@ -306,44 +306,43 @@ def dashboard_data_api(request):
         
         if aggregation == 'daily':
             # Últimos 14 dias
-            for i in range(14):
+            for i in range(13, -1, -1):  # Do mais antigo ao mais recente
                 d = now - timedelta(days=i)
-                day_data = queryset.filter(data__date=d.date())
+                day_data = queryset.filter(data=d.date())
                 day_avg = day_data.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
                 evolucao_data.append(float(day_avg))
                 evolucao_labels.append(d.strftime('%d/%m'))
         elif aggregation == 'monthly':
             # Últimos 6 meses
-            for i in range(6):
-                # Aproximação de meses
-                m_start = (now.replace(day=1) - timedelta(days=i*30)).replace(day=1)
-                # Próximo mês início - 1 dia
-                m_end = (m_start + timedelta(days=32)).replace(day=1)
-                month_data = queryset.filter(data__gte=m_start, data__lt=m_end)
+            for i in range(5, -1, -1):  # Do mais antigo ao mais recente
+                # Calcular início do mês corretamente
+                month_start = (now.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+                # Próximo mês início
+                next_month = (month_start + timedelta(days=32)).replace(day=1)
+                month_data = queryset.filter(data__gte=month_start, data__lt=next_month)
                 month_avg = month_data.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
                 evolucao_data.append(float(month_avg))
-                evolucao_labels.append(m_start.strftime('%m/%y'))
+                evolucao_labels.append(month_start.strftime('%m/%y'))
         elif aggregation == 'yearly':
             # Últimos 3 anos
             current_year = now.year
-            for i in range(3):
+            for i in range(2, -1, -1):  # Do mais antigo ao mais recente
                 year = current_year - i
                 year_data = queryset.filter(data__year=year)
                 year_avg = year_data.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
                 evolucao_data.append(float(year_avg))
                 evolucao_labels.append(str(year))
         else: # weekly
-            # Últimas 8 semanas
-            for i in range(8):
+            # Últimas 8 semanas (do mais antigo ao mais recente)
+            for i in range(7, -1, -1):
                 week_start = now - timedelta(weeks=i+1)
                 week_end = now - timedelta(weeks=i)
-                week_data = queryset.filter(data__gte=week_start, data__lt=week_end)
+                week_data = queryset.filter(data__gte=week_start.date(), data__lt=week_end.date())
                 week_avg = week_data.aggregate(Avg('valor_alcançado'))['valor_alcançado__avg'] or 0
                 evolucao_data.append(float(week_avg))
                 evolucao_labels.append(f'S {8-i}')
-                
-        evolucao_labels.reverse()
-        evolucao_data.reverse()
+        
+        # NÃO fazer reverse aqui - os dados já estão na ordem correta (antigo → recente)
 
         # Top indivíduos (buscar todos para encontrar posição do usuário)
         ranking_completo = []

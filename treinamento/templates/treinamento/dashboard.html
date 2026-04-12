@@ -2947,13 +2947,22 @@ window.addEventListener('load', function() {
         gradient.addColorStop(0, 'rgba(99, 102, 241, 0.2)');
         gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
 
+        // Dados já vêm ordenados corretamente da view (mais antigo → mais recente)
+        // NÃO fazer reverse aqui!
+        const labels = evData.labels;
+        const data = evData.data;
+        
+        // Calcular máximo dinâmico baseado nos dados
+        const maxVal = Math.max(...data);
+        const suggestedMax = maxVal > 0 ? Math.ceil(maxVal * 1.2) : 100;
+
         charts.evolution = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: evData.labels.reverse(),
+                labels: labels,
                 datasets: [{
                     label: 'Média',
-                    data: evData.data.reverse(),
+                    data: data,
                     borderColor: '#6366f1',
                     borderWidth: 3,
                     pointBackgroundColor: '#fff',
@@ -2967,13 +2976,23 @@ window.addEventListener('load', function() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Média: ${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 200,
-                        ticks: { stepSize: 20 },
-                        suggestedMax: undefined
+                        suggestedMax: suggestedMax,
+                        ticks: { 
+                            stepSize: Math.max(10, Math.ceil(suggestedMax / 10))
+                        }
                     },
                     x: { grid: { display: false } }
                 }
