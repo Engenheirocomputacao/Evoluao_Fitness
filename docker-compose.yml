@@ -44,7 +44,7 @@ services:
       - DB_HOST=db
       - MQTT_BROKER_HOST=mqtt
     depends_on:
-      - db
+      # - db
       - mqtt
 
 volumes:
