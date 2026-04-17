@@ -287,6 +287,47 @@ Formato de dados esperado para ingestão IoT:
     *   **Aplicação:** `http://localhost:8000/`
     *   **Admin:** `http://localhost:8000/admin/` (usuário: `admin`, senha: `adminpass`)
 
+### Utilizando o Docker Compose
+
+Para uma prova de conceito rápida ou ambiente de desenvolvimento isolado, você pode utilizar o Docker para subir a aplicação, a camada de cache Redis e o Broker MQTT simultaneamente.
+
+**Pré-requisitos:**
+* Docker instalado.
+* Docker Compose instalado.
+
+**Passo a Passo:**
+
+1.  **Construir e Iniciar os Containers:**
+    ```bash
+    docker-compose up --build
+    ```
+
+2.  **Preparar o Banco de Dados:**
+    Em um novo terminal (com os containers rodando), caso utilize um banco de produção, execute as migrações:
+    ```bash
+    docker-compose exec web python manage.py migrate
+    ```
+
+3.  **Popular Dados e Criar Admin:**
+    Execute o comando de população padrão para criar o usuário `admin` (senha: `adminpass`) e dados de exemplo:
+    ```bash
+    docker-compose exec web python manage.py populate_data
+    ```
+    *(Opcional)* Para testar as funções IoT, popule dados de sensores simulados:
+    ```bash
+    docker-compose exec web python manage.py create_iot_sample_data
+    ```
+
+4.  **Acesso:**
+    * Aplicação: `http://localhost:8000/`
+    * Dashboard IoT: `http://localhost:8000/iot/`
+
+5.  **Simular Dispositivos IoT:**
+    Com o ambiente Docker rodando, você pode executar o simulador localmente para enviar dados ao container MQTT:
+    ```bash
+    python iot_examples/iot_simulator.py
+    ```
+
 ### Ambiente de Produção
 
 Para ambiente de produção, considere:

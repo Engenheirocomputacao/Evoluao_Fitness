@@ -1,0 +1,51 @@
+services:
+  # 'db' é para caso vá se usar um banco Postgres próprio ao invés do SQLite (produção)
+
+  # db:
+  #   image: postgres:15-alpine
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data/
+  #   environment:
+  #     - POSTGRES_DB=evolucao_fitness
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres_pass
+
+  # Redis para rodar os "Channels / Redis Layer" (controle_treinamento/settings.py l73)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Para utilizar com serivço MQTT (treinamento/mqtt_service.py), biblioteca "paho.mqtt.client"
+  # O 'eclipse-mosquitto' é um "Broker" - espécie de "Central de Correios"/"Roteador de Rádio"
+  # usado para estabelecer a comunicação "IoT", usando o padrão Pub/Sub (Publish/Subscribe).
+  # Aqui, ele irá interceptar nosso simulador em `iot_examples/iot_simulator.py` e a partir disso
+  # o "treinamento/mqtt_service.py" pode utilizar esses dados.
+  mqtt:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf # Necessário criar este arquivo simples
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DB_NAME=evolucao_fitness
+      - DB_USER=postgres
+      - DB_PASS=postgres_pass
+      - DB_HOST=db
+      - MQTT_BROKER_HOST=mqtt
+    depends_on:
+      - db
+      - mqtt
+
+volumes:
+  postgres_data:
