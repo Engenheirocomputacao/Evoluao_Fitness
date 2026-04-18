@@ -8,10 +8,6 @@ __pycache__/
 env/
 .venv/
 
-# Django
-/media/
-/static/
-staticfiles/
 
 # OS
 .DS_Store
